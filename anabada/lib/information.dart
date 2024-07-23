@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class InformationScreen extends StatelessWidget {
   final List<Map<String, dynamic>> faqItems = [
@@ -115,18 +116,22 @@ class FAQItem extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              category,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Expanded(
+              child: AutoSizeText(
+                category,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                maxLines: 1,
+              ),
             ),
             SizedBox(width: 8),
             Icon(icon), // Custom icon
           ],
         ),
         SizedBox(height: 8),
-        Text(
+        AutoSizeText(
           description,
           style: TextStyle(fontSize: 16),
+          maxLines: 3,
         ),
         SizedBox(height: 16),
       ],

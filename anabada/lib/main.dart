@@ -5,6 +5,9 @@ import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
+import 'account.dart';
+import 'settings.dart';
+import 'login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,7 +58,8 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
       const RewardScreen(),
       const RecycleScreen(),
       const PointsScreen(),
-      const InformationScreen(),
+      InformationScreen(),
+      AccountScreen(),
     ]);
   }
 
@@ -221,22 +225,45 @@ class _ProfileIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<Menu>(
-        icon: const Icon(Icons.person),
-        offset: const Offset(0, 40),
-        onSelected: (Menu item) {},
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
-              const PopupMenuItem<Menu>(
-                value: Menu.itemOne,
-                child: Text('Account'),
-              ),
-              const PopupMenuItem<Menu>(
-                value: Menu.itemTwo,
-                child: Text('Settings'),
-              ),
-              const PopupMenuItem<Menu>(
-                value: Menu.itemThree,
-                child: Text('Sign Out'),
-              ),
-            ]);
+      icon: const Icon(Icons.person),
+      offset: const Offset(0, 40),
+      onSelected: (Menu item) {
+        switch (item) {
+          case Menu.itemOne:
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AccountScreen()),
+            );
+            break;
+          case Menu.itemTwo:
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+            break;
+          case Menu.itemThree:
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (Route<dynamic> route) => false,
+            );
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
+        const PopupMenuItem<Menu>(
+          value: Menu.itemOne,
+          child: Text('Account'),
+        ),
+        const PopupMenuItem<Menu>(
+          value: Menu.itemTwo,
+          child: Text('Settings'),
+        ),
+        const PopupMenuItem<Menu>(
+          value: Menu.itemThree,
+          child: Text('Sign Out'),
+        ),
+      ],
+    );
   }
 }
