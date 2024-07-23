@@ -1,69 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
+import 'settings.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+class ResponsiveNavBarPage extends StatelessWidget {
+  final Widget child;
+  ResponsiveNavBarPage({Key? key, required this.child}) : super(key: key);
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Tab App',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF009E73),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF009E73),
-          foregroundColor: Colors.white,
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Color(0xFF009E73),
-          unselectedItemColor: Colors.black,
-        ),
-      ),
-      home: const ResponsiveNavBarPage(),
-    );
-  }
-}
-
-class ResponsiveNavBarPage extends StatefulWidget {
-  const ResponsiveNavBarPage({Key? key}) : super(key: key);
-
-  @override
-  _ResponsiveNavBarPageState createState() => _ResponsiveNavBarPageState();
-}
-
-class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _pages.addAll([
-      HomeScreen(onTabTapped: _onTabTapped),
-      const RewardScreen(),
-      const RecycleScreen(),
-      const PointsScreen(),
-      const InformationScreen(),
-    ]);
-  }
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,35 +52,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
           ],
         ),
         drawer: isLargeScreen ? null : _drawer(context),
-        body: _pages[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTabTapped,
-          selectedItemColor: const Color(0xFF009E73),
-          unselectedItemColor: const Color(0xFF009E73),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.card_giftcard),
-              label: 'Reward',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.recycling),
-              label: 'Recycle',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.point_of_sale),
-              label: 'Points',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.info),
-              label: 'Information',
-            ),
-          ],
-        ),
+        body: child,
       ),
     );
   }
@@ -146,7 +65,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
                       _navigateTo(context, item);
                       _scaffoldKey.currentState?.openEndDrawer();
                     },
-                    title: Text(item, style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF009E73)),),
+                    title: Text(item),
                   ))
               .toList(),
         ),
@@ -177,29 +96,40 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   void _navigateTo(BuildContext context, String item) {
     switch (item) {
       case 'Home':
-        setState(() {
-          _currentIndex = 0;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: HomeScreen(onTabTapped: (index) {}))),
+        );
         break;
       case 'Reward':
-        setState(() {
-          _currentIndex = 1;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: const RewardScreen())),
+        );
         break;
       case 'Recycle':
-        setState(() {
-          _currentIndex = 2;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: const RecycleScreen())),
+        );
         break;
       case 'Points':
-        setState(() {
-          _currentIndex = 3;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: const PointsScreen())),
+        );
         break;
       case 'Information':
-        setState(() {
-          _currentIndex = 4;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: const InformationScreen())),
+        );
+        break;
+      case 'Settings':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ResponsiveNavBarPage(child: const SettingsScreen())),
+        );
         break;
     }
   }
@@ -211,6 +141,7 @@ final List<String> _menuItems = <String>[
   'Recycle',
   'Points',
   'Information',
+  'Settings',
 ];
 
 enum Menu { itemOne, itemTwo, itemThree }
