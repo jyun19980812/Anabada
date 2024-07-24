@@ -44,7 +44,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: settings.entries.map((entry) {
-          // 각 설정 섹션을 생성합니다.
           return SettingsSection(
             title: entry.key,
             children: entry.value.map((item) {
