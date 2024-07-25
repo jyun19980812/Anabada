@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
@@ -8,6 +9,7 @@ import 'account/account.dart';
 import 'settings.dart';
 import 'login/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'font_size_provider.dart';
 
 void main() {
   // Provider로 폰트 크기 전체 반영하기 위해 MultiProvider 추가
