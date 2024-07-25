@@ -4,9 +4,9 @@ import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
-import 'account/account.dart';
+import 'account.dart';
 import 'settings.dart';
-import 'login/login.dart';
+import 'login.dart';
 
 void main() {
   runApp(const MyApp());

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:provider/provider.dart';
+import 'font_size_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   final Function(int) onTabTapped;
@@ -7,6 +9,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 16.0; // 폰트 S M L 용도 -> 기본 크기 바꾸고 싶으면 여기서 조정
     final double cardHeight = MediaQuery.of(context).size.height * 0.5;
     final double cardWidth = MediaQuery.of(context).size.width - 32; // 패딩을 제외한 너비
 
@@ -35,22 +39,29 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.recycling, size: 50, color: Colors.white),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Points Available!',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                              color: Colors.white),
                           maxLines: 1,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Take a photo, recycle, and earn up to 100 points today!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Recycle!',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,),
                           maxLines: 1,
                         ),
                       ],
@@ -80,22 +91,29 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.card_giftcard, size: 50, color: Colors.white),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Want Reward?',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                              color: Colors.white),
                           maxLines: 1,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Spend your points for gift cards!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Reward!',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
                           maxLines: 1,
                         ),
                       ],
@@ -125,22 +143,28 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.point_of_sale, size: 50, color: Colors.white),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'How Are You Doing?',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 1,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'See where you are at with your points!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Check!',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              fontWeight: FontWeight.bold, color: Colors.white),
                           maxLines: 1,
                         ),
                       ],
@@ -170,22 +194,28 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.info, size: 50, color: Colors.white),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Curious About Recycle?',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 1,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Learn what and how to recycle!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              color: Colors.white),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 10),
-                        const AutoSizeText(
+                        Text(
                           'Learn!',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              fontWeight: FontWeight.bold, color: Colors.white),
                           maxLines: 1,
                         ),
                       ],

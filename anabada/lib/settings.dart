@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'font_size_provider.dart';
 
-// Switch 있으면 Stateful 해야 눌렀을 때 계속 유지된다고 함
-// Stateless로 하면 누른 손 떼자마자 돌아감 ㅋㅋ;;
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
@@ -10,7 +10,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // 설정 추가할 때 편하려고 map으로 제작
   final Map<String, List<String>> settings = {
     'Account': ['Change e-mail', 'Change Phone No.', 'Change Location'],
     'General': ['Set the unit in kg'],
@@ -18,25 +17,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     'Accessibility': ['접근성 Talkback', 'Font Size', 'Dark Mode'],
   };
 
-  bool _isKgEnabled = false; // kg인지 lbs인지 체크할 때 쓸 거임
-  String _fontSize = 'M'; // 기본 크기 M
-  final double baseFontSize = 20.0; // 기본 크기 20 -> 나중에 쉽게 변경하려고 따로 설정함
-
-  // S, M, L에 따라 폰트 크기 리턴
-  double getFontSize() {
-    switch (_fontSize) {
-      case 'S':
-        return baseFontSize * 0.8;
-      case 'L':
-        return baseFontSize * 1.2;
-      case 'M':
-      default:
-        return baseFontSize;
-    }
-  }
+  bool _isKgEnabled = false;
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -46,14 +33,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: settings.entries.map((entry) {
           return SettingsSection(
             title: entry.key,
+            fontSize: baseFontSize,
+            getFontSize: fontSizeProvider.getFontSize,
             children: entry.value.map((item) {
               if (item == 'Set the unit in kg') {
                 return SettingsTile(
                   title: item,
-                  fontSize: getFontSize(),
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   trailing: Switch(
                     value: _isKgEnabled,
-                    activeColor: const Color(0xff29dead), // 스위치 On이면 초록색으로
+                    activeColor: const Color(0xff29dead),
                     onChanged: (bool value) {
                       setState(() {
                         _isKgEnabled = value;
@@ -64,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               } else if (item == 'Font Size') {
                 return SettingsTile(
                   title: item,
-                  fontSize: getFontSize(),
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: ['S', 'M', 'L'].map((size) {
@@ -72,12 +61,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: ElevatedButton(
                           onPressed: () {
-                            setState(() {
-                              _fontSize = size;
-                            });
+                            fontSizeProvider.setFontSize(size);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _fontSize == size ? Color(0xff29dead) : Colors.grey, // 초록, 회색으로
+                            backgroundColor: fontSizeProvider.fontSize == size ? Color(0xff29dead) : Colors.grey,
                           ),
                           child: Text(size),
                         ),
@@ -88,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               } else {
                 return SettingsTile(
                   title: item,
-                  fontSize: getFontSize(),
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
                 );
               }
             }).toList(),
@@ -99,38 +86,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-
 class SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
+  final double fontSize;
+  final double Function(double) getFontSize;
 
   const SettingsSection({
     required this.title,
     required this.children,
+    required this.fontSize,
+    required this.getFontSize,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: getFontSize(fontSize),
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
         ...children,
-        const Divider(), // 섹션 간 구분선 추가
+        const Divider(),
       ],
     );
   }
 }
-
 
 class SettingsTile extends StatelessWidget {
   final String title;
@@ -140,7 +129,7 @@ class SettingsTile extends StatelessWidget {
   const SettingsTile({
     required this.title,
     this.trailing,
-    this.fontSize = 20.0, // 기본 폰트 20
+    this.fontSize = 20.0,
   });
 
   @override
