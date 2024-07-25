@@ -11,6 +11,8 @@ class RewardScreen extends StatelessWidget {
   }
 }
 
+var point = '5010P';
+
 class Reward extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,15 @@ class Reward extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Points : 5000p',
+                  'Points : ',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff009e73),
+                  ),
+                ),
+                Text(
+                  point,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -52,18 +62,32 @@ class Reward extends StatelessWidget {
                 crossAxisCount: 2,
                 padding: EdgeInsets.all(8),
                 children: [
-                  GiftCard(image: 'starbucksgiftcard.png', value: '\$10'),
-                  GiftCard(image: 'starbucksgiftcard.png', value: '\$25'),
-                  GiftCard(image: 'starbucksgiftcard.png', value: '\$50'),
-                  GiftCard(image: 'starbucksgiftcard.png', value: '\$100'),
-                  GiftCard(image: 'amazongiftcard.png', value: '\$10'),
-                  GiftCard(image: 'amazongiftcard.png', value: '\$25'),
-                  GiftCard(image: 'amazongiftcard.png', value: '\$50'),
-                  GiftCard(image: 'amazongiftcard.png', value: '\$100'),
-                  GiftCard(image: 'walmartsgiftcard.png', value: '\$10'),
-                  GiftCard(image: 'walmartsgiftcard.png', value: '\$25'),
-                  GiftCard(image: 'walmartsgiftcard.png', value: '\$50'),
-                  GiftCard(image: 'walmartsgiftcard.png', value: '\$100'),
+                  GiftCard(
+                      image: './assets/starbucksgiftcard.png', value: '\$10'),
+                  GiftCard(
+                      image: './assets/starbucksgiftcard.png', value: '\$25'),
+                  GiftCard(
+                      image: './assets/starbucksgiftcard.png', value: '\$50'),
+                  GiftCard(
+                      image: './assets/starbucksgiftcard.png', value: '\$100'),
+                  GiftCard(image: './assets/amazongiftcard.png', value: '\$10'),
+                  GiftCard(image: './assets/amazongiftcard.png', value: '\$25'),
+                  GiftCard(image: './assets/amazongiftcard.png', value: '\$50'),
+                  GiftCard(
+                      image: './assets/amazongiftcard.png', value: '\$100'),
+                  GiftCard(
+                      image: './assets/walmartsgiftcard.png', value: '\$10'),
+                  GiftCard(
+                      image: './assets/walmartsgiftcard.png', value: '\$25'),
+                  GiftCard(
+                      image: './assets/walmartsgiftcard.png', value: '\$50'),
+                  GiftCard(
+                      image: './assets/walmartsgiftcard.png', value: '\$100'),
+                  GiftCard(image: './assets/targetgiftcard.png', value: '\$10'),
+                  GiftCard(image: './assets/targetgiftcard.png', value: '\$25'),
+                  GiftCard(image: './assets/targetgiftcard.png', value: '\$50'),
+                  GiftCard(
+                      image: './assets/targetgiftcard.png', value: '\$100'),
                 ],
               ), // GridView.count
             ), // Container
@@ -82,6 +106,15 @@ class GiftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String brand = '';
+
+    if (image.contains('starbucks')) {
+      brand = 'Starbucks';
+    } else if (image.contains('amazon')) {
+      brand = 'Amazon';
+    } else if (image.contains('walmart')) {
+      brand = 'Walmart';
+    }
     return Container(
         child: Card(
       color: const Color.fromARGB(255, 228, 227, 227),
@@ -105,7 +138,7 @@ class GiftCard extends StatelessWidget {
                   color: Colors.grey,
                   width: 2,
                 ),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -118,12 +151,39 @@ class GiftCard extends StatelessWidget {
             ),
           ),
           SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              double fontSize005 =
+                  constraints.maxWidth * 0.05; // 부모 컨테이너의 너비의 10%
+              double fontSize01 = constraints.maxWidth * 0.1;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    brand,
+                    style: TextStyle(
+                      fontSize: fontSize005,
+                    ),
+                  ),
+                  Text(
+                    " gift card ",
+                    style: TextStyle(
+                      fontSize: fontSize005,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: fontSize01,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -139,6 +199,15 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String brand = '';
+
+    if (image.contains('starbucks')) {
+      brand = 'Starbucks';
+    } else if (image.contains('amazon')) {
+      brand = 'Amazon';
+    } else if (image.contains('walmart')) {
+      brand = 'Walmart';
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Product Detail'),
@@ -147,19 +216,49 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              image,
-              height: 200,
-              fit: BoxFit.cover,
-            ),
-            SizedBox(height: 20),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.grey,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  image,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
+
+            SizedBox(height: 20),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(
+                brand,
+                style: TextStyle(
+                  fontSize: 24,
+                ),
+              ),
+              Text(
+                "gift card  ",
+                style: TextStyle(
+                  fontSize: 24,
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ]),
             // 추가로 상세 정보 등을 여기에 추가할 수 있습니다.
             SizedBox(height: 10),
             Padding(
