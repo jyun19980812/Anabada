@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:provider/provider.dart';
 import 'font_size_provider.dart';
 
@@ -69,7 +70,7 @@ class InformationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    final double baseFontSize = 25.0;
+    final double baseFontSize = 20.0;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -122,6 +123,8 @@ class FAQItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -130,8 +133,7 @@ class FAQItem extends StatelessWidget {
             Expanded(
               child: Text(
                 category,
-                style: TextStyle(fontSize: categoryFontSize, fontWeight: FontWeight.bold),
-                maxLines: 1,
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0), fontWeight: FontWeight.bold),
               ),
             ),
             SizedBox(width: 8),
@@ -141,7 +143,7 @@ class FAQItem extends StatelessWidget {
         SizedBox(height: 8),
         Text(
           description,
-          style: TextStyle(fontSize: descriptionFontSize),
+          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),),
         ),
         SizedBox(height: 16),
       ],
