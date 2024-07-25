@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:provider/provider.dart';
+import 'font_size_provider.dart';
 
 class InformationScreen extends StatelessWidget {
   final List<Map<String, dynamic>> faqItems = [
@@ -67,6 +69,8 @@ class InformationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -79,14 +83,18 @@ class InformationScreen extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Color(0xff009e73),
-                  fontSize: 30,
+                  // FAQ는 부제목이니까 기본 사이즈보다 10.0 크게 설정
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
                 ),
               ),
               SizedBox(height: 16),
               ...faqItems.map((item) {
                 return FAQItem(
                   category: item['category']!,
+                  // 기본 설정
+                  categoryFontSize: fontSizeProvider.getFontSize(baseFontSize + 5.0),
                   description: item['description']!,
+                  descriptionFontSize: fontSizeProvider.getFontSize(baseFontSize - 5.0),
                   icon: item['icon']!,
                 );
               }).toList(),
@@ -102,25 +110,30 @@ class FAQItem extends StatelessWidget {
   final String category;
   final String description;
   final IconData icon;
+  final double categoryFontSize;
+  final double descriptionFontSize;
 
   const FAQItem({
     required this.category,
     required this.description,
     required this.icon,
+    required this.categoryFontSize,
+    required this.descriptionFontSize,
   });
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Expanded(
-              child: AutoSizeText(
+              child: Text(
                 category,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                maxLines: 1,
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0), fontWeight: FontWeight.bold),
               ),
             ),
             SizedBox(width: 8),
@@ -128,10 +141,9 @@ class FAQItem extends StatelessWidget {
           ],
         ),
         SizedBox(height: 8),
-        AutoSizeText(
+        Text(
           description,
-          style: TextStyle(fontSize: 16),
-          maxLines: 3,
+          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),),
         ),
         SizedBox(height: 16),
       ],
