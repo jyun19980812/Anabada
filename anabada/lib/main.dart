@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.black,
         ),
       ),
-      home: const ResponsiveNavBarPage(),
+      home: const LoginScreen(),
     );
   }
 }
@@ -59,7 +58,6 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
       const RecycleScreen(),
       const PointsScreen(),
       InformationScreen(),
-      AccountScreen(),
     ]);
   }
 
