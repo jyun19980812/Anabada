@@ -4,6 +4,7 @@ import 'register.dart';
 import 'find_id.dart';
 import 'find_password.dart';
 
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -28,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
