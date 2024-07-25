@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'font_size_provider.dart';
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
@@ -10,6 +7,7 @@ import 'information.dart';
 import 'account/account.dart';
 import 'settings.dart';
 import 'login/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   // Provider로 폰트 크기 전체 반영하기 위해 MultiProvider 추가
@@ -92,9 +90,9 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
           leading: isLargeScreen
               ? null
               : IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
           title: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -150,40 +148,40 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   }
 
   Widget _drawer(BuildContext context) => Drawer(
-    child: ListView(
-      children: _menuItems
-          .map((item) => ListTile(
-        onTap: () {
-          _navigateTo(context, item);
-          _scaffoldKey.currentState?.openEndDrawer();
-        },
-        title: Text(item, style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF009E73)),),
-      ))
-          .toList(),
-    ),
-  );
+        child: ListView(
+          children: _menuItems
+              .map((item) => ListTile(
+                    onTap: () {
+                      _navigateTo(context, item);
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
+                    title: Text(item, style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF009E73)),),
+                  ))
+              .toList(),
+        ),
+      );
 
   Widget _navBarItems(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: _menuItems
-        .map(
-          (item) => InkWell(
-        onTap: () {
-          _navigateTo(context, item);
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              vertical: 24.0, horizontal: 16),
-          child: Text(
-            item,
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-      ),
-    )
-        .toList(),
-  );
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _menuItems
+            .map(
+              (item) => InkWell(
+                onTap: () {
+                  _navigateTo(context, item);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 24.0, horizontal: 16),
+                  child: Text(
+                    item,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      );
 
   void _navigateTo(BuildContext context, String item) {
     switch (item) {
@@ -252,7 +250,7 @@ class _ProfileIcon extends StatelessWidget {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
             );
             break;
         }
