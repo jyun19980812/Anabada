@@ -31,13 +31,17 @@ dependencies:
   flutter:
     sdk: flutter
   auto_size_text: ^3.0.0
+  camera: ^0.9.4+5
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.0 # 자꾸 provider 문제 일어나서 업데이트함
+  provider: ^6.0.1 # Settings의 Font Size를 전역으로 사용하기 위한 패키지
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
-  image_picker: ^1.1.2
   firebase_core: ^3.2.0
   cloud_firestore: ^5.1.0
+
 
 dev_dependencies:
   flutter_test:
@@ -48,14 +52,14 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^4.0.0 # 업데이트함
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-        
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -88,7 +92,7 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  
+
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

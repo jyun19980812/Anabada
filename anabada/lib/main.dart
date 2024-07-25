@@ -10,7 +10,13 @@ import 'login/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
-  runApp(const MyApp());
+  // Provider로 폰트 크기 전체 반영하기 위해 MultiProvider 추가
+  runApp(MultiProvider(
+    providers:[
+      ChangeNotifierProvider(create: (_) => FontSizeProvider()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
