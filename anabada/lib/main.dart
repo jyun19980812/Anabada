@@ -7,6 +7,7 @@ import 'information.dart';
 import 'account/account.dart';
 import 'settings.dart';
 import 'login/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   runApp(const MyApp());
