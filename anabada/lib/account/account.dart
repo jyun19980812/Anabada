@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -31,7 +33,12 @@ class AccountScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FloatingActionButton.extended(
-                        onPressed: () {},
+                        onPressed: () {ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Friend request sent!"),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );},
                         heroTag: 'friend_request',
                         elevation: 0,
                         backgroundColor: Color(0xFF009e73),
@@ -40,7 +47,23 @@ class AccountScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 16.0),
                       FloatingActionButton.extended(
-                        onPressed: () {},
+                        onPressed: () {showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text("Send a Message"),
+                            content: TextField(
+                              decoration: InputDecoration(hintText: "Enter your message here"),
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text("Send"),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          ),
+                        );},
                         heroTag: 'message',
                         elevation: 0,
                         backgroundColor: Color(0xFF0072b2),
@@ -78,36 +101,36 @@ class _ProfileInfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: _items
             .map((item) => Expanded(
-                    child: Row(
-                  children: [
-                    if (_items.indexOf(item) != 0) const VerticalDivider(),
-                    Expanded(child: _singleItem(context, item)),
-                  ],
-                )))
+            child: Row(
+              children: [
+                if (_items.indexOf(item) != 0) const VerticalDivider(),
+                Expanded(child: _singleItem(context, item)),
+              ],
+            )))
             .toList(),
       ),
     );
   }
 
   Widget _singleItem(BuildContext context, ProfileInfoItem item) => Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              item.value.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          item.value.toString(),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
-          Text(
-            item.title,
-            style: Theme.of(context).textTheme.bodySmall,
-          )
-        ],
-      );
+        ),
+      ),
+      Text(
+        item.title,
+        style: Theme.of(context).textTheme.bodySmall,
+      )
+    ],
+  );
 }
 
 class ProfileInfoItem {
@@ -116,8 +139,30 @@ class ProfileInfoItem {
   const ProfileInfoItem(this.title, this.value);
 }
 
-class _TopPortion extends StatelessWidget {
+class _TopPortion extends StatefulWidget {
   const _TopPortion({Key? key}) : super(key: key);
+
+  @override
+  State<_TopPortion> createState() => _TopPortionState();
+}
+
+class _TopPortionState extends State<_TopPortion> {
+  ImageProvider<Object>? _image = const AssetImage('assets/default.jpg'); // Default image path
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        print("Selected image path: ${image.path}");  // 로그에 경로 출력
+        setState(() {
+          _image = FileImage(File(image.path));  // 이미지 업데이트
+        });
+      }
+    } catch (e) {
+      print("Image pick error: $e");  // 에러 로깅
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,37 +183,22 @@ class _TopPortion extends StatelessWidget {
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: SizedBox(
-            width: 150,
-            height: 150,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: AssetImage(''), // 기본 아이콘으로 변경
-                    ),
-                  ),
-                  child: const Icon(Icons.person, size: 100, color: Colors.white), // 기본 아이콘 적용
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    child: Container(
-                      margin: const EdgeInsets.all(8.0),
-                      decoration: const BoxDecoration(
-                          color: Colors.green, shape: BoxShape.circle),
-                    ),
+          child: GestureDetector(
+            onTap: _pickImage,  // Add tap functionality
+            child: SizedBox(
+              width: 150,
+              height: 150,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: _image!,  // Use user-selected image
                   ),
                 ),
-              ],
+                child: const Icon(Icons.person, size: 100, color: Colors.white), // Default icon
+              ),
             ),
           ),
         )

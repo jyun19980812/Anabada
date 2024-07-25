@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; 
+import '../main.dart';
 import 'register.dart';
 import 'find_id.dart';
 import 'find_password.dart';

@@ -52,7 +52,7 @@ class Reward extends StatelessWidget {
                 crossAxisCount: 2,
                 padding: EdgeInsets.all(8),
                 children: [
-                  GiftCard(image: 'starbucksgiftcard.png', value: '\$10'),
+                  GiftCard(image: './assets/starbucksgiftcard.png', value: '\$10'),
                   GiftCard(image: 'starbucksgiftcard.png', value: '\$25'),
                   GiftCard(image: 'starbucksgiftcard.png', value: '\$50'),
                   GiftCard(image: 'starbucksgiftcard.png', value: '\$100'),
