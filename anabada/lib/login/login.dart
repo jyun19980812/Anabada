@@ -1,9 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'register.dart';
 import 'find_id.dart';
 import 'find_password.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -14,14 +15,84 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool rememberMe = false;
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void _onLogin() {
-    if (usernameController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ResponsiveNavBarPage()),
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMe();
+  }
+
+  // Remember Me 상태 로드
+  void _loadRememberMe() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      rememberMe = prefs.getBool('remember_me') ?? false;
+      if (rememberMe) {
+        emailController.text = prefs.getString('email') ?? '';
+        passwordController.text = prefs.getString('password') ?? ''; // 패스워드 자동완성 추가
+      }
+      print("Remember Me: $rememberMe");
+      print("Email: ${emailController.text}");
+      print("Password: ${passwordController.text}");
+    });
+  }
+
+  // Remember Me 상태 저장
+  void _saveRememberMe() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('remember_me', rememberMe);
+    if (rememberMe) {
+      prefs.setString('email', emailController.text);
+      prefs.setString('password', passwordController.text); // 패스워드 저장 추가
+    } else {
+      prefs.remove('email');
+      prefs.remove('password'); // 패스워드 제거 추가
+    }
+    print("Saved Remember Me: $rememberMe");
+    print("Saved Email: ${emailController.text}");
+    print("Saved Password: ${passwordController.text}");
+  }
+
+  void _onLogin() async {
+    if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+
+        // Remember Me 상태 저장
+        _saveRememberMe();
+
+        // 로그인한 유저 정보 접근
+        User? user = userCredential.user;
+        if (user != null) {
+          print("User ID: ${user.uid}");
+          print("User Email: ${user.email}");
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ResponsiveNavBarPage()),
+        );
+      } on FirebaseAuthException catch (e) {
+        String message;
+        if (e.code == 'user-not-found') {
+          message = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password provided.';
+        } else {
+          message = 'Login failed. Please try again.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter both email and password.')),
       );
     }
   }
@@ -29,7 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       body: Center(
+      resizeToAvoidBottomInset: false,
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
@@ -42,11 +114,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 48),
               TextField(
-                controller: usernameController,
+                controller: emailController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Username',
+                  hintText: 'Email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
