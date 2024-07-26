@@ -4,12 +4,25 @@ import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
-import 'account.dart';
+import 'account/account.dart';
 import 'settings.dart';
-import 'login.dart';
+import 'login/login.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'font_size_provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MultiProvider(
+    providers:[
+      ChangeNotifierProvider(create: (_) => FontSizeProvider()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -31,8 +44,41 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.black,
         ),
       ),
-      home: const LoginScreen(),
+      home: const RootScreen(), // 변경된 부분
     );
+  }
+}
+
+class RootScreen extends StatefulWidget {
+  const RootScreen({Key? key}) : super(key: key);
+
+  @override
+  _RootScreenState createState() => _RootScreenState();
+}
+
+class _RootScreenState extends State<RootScreen> {
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool rememberMe = prefs.getBool('remember_me') ?? false;
+    if (rememberMe) {
+      var user = FirebaseAuth.instance.currentUser;
+      setState(() {
+        _isLoggedIn = user != null;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isLoggedIn ? const ResponsiveNavBarPage() : const LoginScreen();
   }
 }
 
@@ -83,9 +129,9 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
           leading: isLargeScreen
               ? null
               : IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                ),
+            icon: const Icon(Icons.menu),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
           title: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -141,40 +187,44 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   }
 
   Widget _drawer(BuildContext context) => Drawer(
-        child: ListView(
-          children: _menuItems
-              .map((item) => ListTile(
-                    onTap: () {
-                      _navigateTo(context, item);
-                      _scaffoldKey.currentState?.openEndDrawer();
-                    },
-                    title: Text(item, style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF009E73)),),
-                  ))
-              .toList(),
+    child: ListView(
+      children: _menuItems
+          .map((item) => ListTile(
+        onTap: () {
+          _navigateTo(context, item);
+          _scaffoldKey.currentState?.openEndDrawer();
+        },
+        title: Text(
+          item,
+          style: TextStyle(
+              fontWeight: FontWeight.w700, color: Color(0xFF009E73)),
         ),
-      );
+      ))
+          .toList(),
+    ),
+  );
 
   Widget _navBarItems(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: _menuItems
-            .map(
-              (item) => InkWell(
-                onTap: () {
-                  _navigateTo(context, item);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 24.0, horizontal: 16),
-                  child: Text(
-                    item,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
-            )
-            .toList(),
-      );
+    mainAxisAlignment: MainAxisAlignment.end,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: _menuItems
+        .map(
+          (item) => InkWell(
+        onTap: () {
+          _navigateTo(context, item);
+        },
+        child: Padding(
+          padding:
+          const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16),
+          child: Text(
+            item,
+            style: const TextStyle(fontSize: 18),
+          ),
+        ),
+      ),
+    )
+        .toList(),
+  );
 
   void _navigateTo(BuildContext context, String item) {
     switch (item) {
@@ -240,11 +290,7 @@ class _ProfileIcon extends StatelessWidget {
             );
             break;
           case Menu.itemThree:
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (Route<dynamic> route) => false,
-            );
+            _logout(context);
             break;
         }
       },
@@ -262,6 +308,18 @@ class _ProfileIcon extends StatelessWidget {
           child: Text('Sign Out'),
         ),
       ],
+    );
+  }
+
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('remember_me');
+    prefs.remove('email');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
     );
   }
 }

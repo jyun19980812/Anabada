@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "87786685568",
+    "project_id": "anabada-74beb",
+    "storage_bucket": "anabada-74beb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:87786685568:android:376f0c6f2f8dc34d6ad265",
+        "android_client_info": {
+          "package_name": "com.example.anabada"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiMBJWs7sRvUf_L32ykq-FGVsJWqA3ZMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
