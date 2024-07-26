@@ -13,13 +13,13 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController fullnameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 
   void _onSignUp() async {
     if (emailController.text.isNotEmpty &&
-        usernameController.text.isNotEmpty &&
+        fullnameController.text.isNotEmpty &&
         passwordController.text.isNotEmpty &&
         phoneController.text.isNotEmpty) {
       try {
@@ -30,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         // Firebase Firestore에 추가 정보를 저장합니다.
         await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-          'username': usernameController.text,
+          'fullname': fullnameController.text,
           'password': passwordController.text,
           'phone': phoneController.text,
           'email': emailController.text,
@@ -68,12 +68,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 48),
               const Text(
                 'Register',
                 style: TextStyle(
@@ -97,11 +98,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: usernameController,
+                controller: fullnameController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Username',
+                  hintText: 'Full Name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -178,6 +179,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       backgroundColor: const Color(0xFF009E73),
-    );
+      );
   }
 }

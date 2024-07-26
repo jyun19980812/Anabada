@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'register.dart';
-import 'find_id.dart';
+import 'find_email.dart';
 import 'find_password.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     child: const Text(
-                      'Forgot ID?',
+                      'Forgot Email?',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
