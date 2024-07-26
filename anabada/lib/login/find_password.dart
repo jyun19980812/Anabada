@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'login.dart';
-import 'find_id.dart';
+import 'find_email.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -15,21 +16,23 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  final TextEditingController idController = TextEditingController();
   bool isPasswordSent = false;
   String message = '';
 
-  Future<void> _sendEmail(String email, String password) async {
-    String username = 'your-email@gmail.com';
-    String password = 'your-password';
+  Future<void> _sendEmail(String email) async {
+    String username = 'anabada0804@gmail.com';
+    String appPassword = 'ppktnzflxnyovaow';
 
-    final smtpServer = gmail(username, password);
+    final smtpServer = gmail(username, appPassword);
+    final resetLink = "https://your-app.firebaseapp.com/reset-password?email=$email"; // Reset link should be created and handled in your app
+
     final message = Message()
       ..from = Address(username, 'Your App Name')
       ..recipients.add(email)
-      ..subject = 'Your Password'
-      ..text = 'Your password is: $password';
+      ..subject = 'Password Reset'
+      ..text = 'Click the link below to reset your password:\n$resetLink';
 
     try {
       final sendReport = await send(message, smtpServer);
@@ -45,36 +48,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _onResetPassword() async {
     if (emailController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty &&
-        idController.text.isNotEmpty) {
+        fullNameController.text.isNotEmpty &&
+        phoneController.text.isNotEmpty) {
       try {
         // Firestore에서 사용자 정보 조회
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('users')
             .where('email', isEqualTo: emailController.text)
+            .where('fullname', isEqualTo: fullNameController.text)
             .where('phone', isEqualTo: phoneController.text)
-            .where('id', isEqualTo: idController.text)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
-          var password = userDoc['password'];
+
+          // Firebase Auth를 통해 비밀번호 재설정 이메일 전송
+          await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text);
 
           // 이메일 전송
-          await _sendEmail(emailController.text, password);
+          await _sendEmail(emailController.text);
 
           setState(() {
             isPasswordSent = true;
-            message = 'Your password has been sent to your email!';
+            message = 'A password reset link has been sent to your email!';
           });
         } else {
           setState(() {
-            message = 'No user found with provided email, phone number, and ID.';
+            message = 'No user found with provided email, full name, and phone number.';
           });
         }
       } catch (e) {
         setState(() {
-          message = 'Failed to reset password. Please try again.';
+          message = 'Failed to send password reset email. Please try again.';
         });
       }
     }
@@ -114,11 +119,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: phoneController,
+                controller: fullNameController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Phone',
+                  hintText: 'Full Name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -127,11 +132,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: idController,
+                controller: phoneController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'ID',
+                  hintText: 'Phone',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
