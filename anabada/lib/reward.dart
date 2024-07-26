@@ -13,7 +13,14 @@ class RewardScreen extends StatelessWidget {
 
 var point = '5010P';
 
-class Reward extends StatelessWidget {
+class Reward extends StatefulWidget {
+  @override
+  _RewardState createState() => _RewardState();
+}
+
+class _RewardState extends State<Reward> {
+  List<Map<String, String>> purchasedProducts = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +29,7 @@ class Reward extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
                   'Benefits',
@@ -31,6 +38,9 @@ class Reward extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Color(0xff009e73),
                   ),
+                ),
+                SizedBox(
+                  width: 80,
                 ),
                 Text(
                   'Points : ',
@@ -51,6 +61,21 @@ class Reward extends StatelessWidget {
               ],
             ), // Row
           ), // Padding
+          // 구매한 제품 보여주는 박스
+          if (purchasedProducts.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Column(
+                children: purchasedProducts.map((product) {
+                  return Card(
+                    child: ListTile(
+                      title: Text('${product['brand']} gift card'),
+                      subtitle: Text('Value: ${product['value']}'),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -267,7 +292,7 @@ class ProductDetailScreen extends StatelessWidget {
                 width: MediaQuery.of(context).size.width * 0.3,
                 child: ElevatedButton(
                   onPressed: () {
-                    // 구매 버튼을 눌렀을 때의 동작을 여기에 추가합니다.
+                    _showPurchaseDialog(context);
                   },
                   child: Text('Purchase'),
                 ),
@@ -278,4 +303,61 @@ class ProductDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showPurchaseDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Purchase Confirmation'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Current Points: $point'),
+              SizedBox(height: 10),
+              Text('Points after Purchase: 3000P'),
+              SizedBox(height: 20),
+              Text('Do you really want to purchase this gift card?'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 모달 닫기
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // 구매 로직 추가
+                Navigator.of(context).pop(); // 모달 닫기
+                _showConfirmationMessage(context);
+              },
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+void _showConfirmationMessage(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Purchase Complete'),
+        content: Text('We will send you the gift card shortly.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // 모달 닫기
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
 }
