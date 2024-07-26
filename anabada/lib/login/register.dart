@@ -23,13 +23,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         passwordController.text.isNotEmpty &&
         phoneController.text.isNotEmpty) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
 
         // Firebase Firestore에 추가 정보를 저장합니다.
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
           'username': usernameController.text,
           'password': passwordController.text,
           'phone': phoneController.text,
@@ -141,7 +145,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF009E73),
-                  padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -160,7 +165,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen()),
                       );
                     },
                     child: const Text(
