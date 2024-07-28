@@ -101,8 +101,8 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
     _pages.addAll([
       HomeScreen(onTabTapped: _onTabTapped),
       const RewardScreen(),
-      const RecycleScreen(),
-      const PointsScreen(),
+      RecycleScreen(onTabTapped: _onTabTapped),
+      PointsScreen(),
       InformationScreen(),
     ]);
   }
