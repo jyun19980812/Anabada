@@ -21,31 +21,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool isPasswordSent = false;
   String message = '';
 
-  Future<void> _sendEmail(String email) async {
-    String username = 'anabada0804@gmail.com';
-    String appPassword = 'ppktnzflxnyovaow';
-
-    final smtpServer = gmail(username, appPassword);
-    final resetLink = "https://your-app.firebaseapp.com/reset-password?email=$email"; // Reset link should be created and handled in your app
-
-    final message = Message()
-      ..from = Address(username, 'Your App Name')
-      ..recipients.add(email)
-      ..subject = 'Password Reset'
-      ..text = 'Click the link below to reset your password:\n$resetLink';
-
-    try {
-      final sendReport = await send(message, smtpServer);
-      print('Message sent: ' + sendReport.toString());
-    } on MailerException catch (e) {
-      print('Message not sent. \n' + e.toString());
-      for (var p in e.problems) {
-        print('Problem: ${p.code}: ${p.msg}');
-      }
-      throw Exception('Failed to send email');
-    }
-  }
-
   Future<void> _onResetPassword() async {
     if (emailController.text.isNotEmpty &&
         fullNameController.text.isNotEmpty &&
@@ -64,9 +39,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
           // Firebase Auth를 통해 비밀번호 재설정 이메일 전송
           await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text);
-
-          // 이메일 전송
-          await _sendEmail(emailController.text);
 
           setState(() {
             isPasswordSent = true;
