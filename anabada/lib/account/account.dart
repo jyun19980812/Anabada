@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
+
+import '/settings/edit.dart';
+import '/settings/image_provider.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -156,7 +161,8 @@ class _TopPortionState extends State<_TopPortion> {
       if (image != null) {
         print("Selected image path: ${image.path}");  // 로그에 경로 출력
         setState(() {
-          _image = FileImage(File(image.path));  // 이미지 업데이트
+          // _image = FileImage(File(image.path));  // 이미지 업데이트
+          Provider.of<ProfileImageProvider>(context, listen: false).setImageFile(image); // Provider로 이미지 업뎃
         });
       }
     } catch (e) {
@@ -166,6 +172,7 @@ class _TopPortionState extends State<_TopPortion> {
 
   @override
   Widget build(BuildContext context) {
+    final profileImageProvider = Provider.of<ProfileImageProvider>(context);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -184,7 +191,7 @@ class _TopPortionState extends State<_TopPortion> {
         Align(
           alignment: Alignment.bottomCenter,
           child: GestureDetector(
-            onTap: _pickImage,  // Add tap functionality
+            onTap: _pickImage,
             child: SizedBox(
               width: 150,
               height: 150,
@@ -194,10 +201,16 @@ class _TopPortionState extends State<_TopPortion> {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: _image!,  // Use user-selected image
+                    image: profileImageProvider.imageFile != null
+                        ? (kIsWeb
+                          ? NetworkImage(profileImageProvider.imageFile!.path) // 웹에서 테스트 시 오류 방지
+                          : FileImage(File(profileImageProvider.imageFile!.path)) as ImageProvider)
+                        : const AssetImage('assets/default.jpg'),
                   ),
                 ),
-                child: const Icon(Icons.person, size: 100, color: Colors.white), // Default icon
+                child: profileImageProvider.imageFile == null
+                      ? Icon(Icons.person, size: 100, color: Colors.white)  // 사진이 없으면 아이콘
+                      : null, // 있으면 아무것도 안 띄움
               ),
             ),
           ),

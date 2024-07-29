@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   auto_size_text: ^3.0.0
-  camera: ^0.9.4+5
+  camera: ^0.11.0 # ^0.9.4+5
   image_picker: ^1.1.2
   permission_handler: ^11.3.0 # 자꾸 provider 문제 일어나서 업데이트함
   provider: ^6.1.2 # Settings의 Font Size를 전역으로 사용하기 위한 패키지
