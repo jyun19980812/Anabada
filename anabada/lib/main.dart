@@ -1,18 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
-import 'reward.dart';
-import 'recycle.dart';
-import 'points.dart';
-import 'information.dart';
-import 'account/account.dart';
-import 'settings.dart';
-import 'login/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'font_size_provider.dart';
+
+import 'dart:io';
+
+import 'home.dart';
+import 'reward.dart';
+import 'recycle.dart';
+import 'points.dart';
+import 'information.dart';
+import 'login/login.dart';
+
+import 'account/account.dart';
+
+import 'settings/settings.dart';
+import 'settings/font_size_provider.dart';
+import 'settings/image_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +27,8 @@ void main() async {
   runApp(MultiProvider(
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
+      ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
+
     ],
     child: const MyApp(),
   ));
@@ -272,8 +281,16 @@ class _ProfileIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profileImageProvider = Provider.of<ProfileImageProvider>(context);
     return PopupMenuButton<Menu>(
-      icon: const Icon(Icons.person),
+      icon: profileImageProvider.imageFile != null
+          ? CircleAvatar(
+        backgroundImage: kIsWeb
+            ? NetworkImage(profileImageProvider.imageFile!.path)
+            : FileImage(File(profileImageProvider.imageFile!.path))
+        as ImageProvider,
+      )
+          : const Icon(Icons.person), // 사진 없으면 person 아이콘 아니면 사진
       offset: const Offset(0, 40),
       onSelected: (Menu item) {
         switch (item) {
