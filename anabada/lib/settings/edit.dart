@@ -27,7 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _currentPasswordController = TextEditingController();
 
   final ImagePicker _picker = ImagePicker();
-  String? _profileImageUrl;
+  XFile? _imageFile;
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final profileImageUrl = data['profileImageUrl'] as String?;
         if (profileImageUrl != null) {
           setState(() {
-            _profileImageUrl = profileImageUrl;
+            _imageFile = XFile(profileImageUrl);
           });
         }
       }
@@ -58,7 +58,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final XFile? selectedImage = await _picker.pickImage(source: ImageSource.gallery);
       if (selectedImage != null) {
         setState(() {
-          _profileImageUrl = selectedImage.path;
+          _imageFile = selectedImage;
         });
       }
     } catch (e) {
@@ -86,7 +86,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       await _reauthenticate(user);
       await _updateUserInfo(user);
-      if (_profileImageUrl != null && !_profileImageUrl!.startsWith('http')) {
+      if (_imageFile != null) {
         await _uploadProfileImage(user);
       }
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,10 +103,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _reauthenticate(User user) async {
     final currentPassword = _currentPasswordController.text;
-
-    if (currentPassword.isEmpty) {
-      throw Exception("Current password is required for reauthentication");
-    }
 
     try {
       final credential = EmailAuthProvider.credential(
@@ -130,9 +126,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _uploadProfileImage(User user) async {
-    final storage = FirebaseStorage.instance;
+    final storage = FirebaseStorage.instanceFor(
+      bucket: 'gs://anabada-74beb.appspot.com',  // Replace with your actual bucket name
+    );
     final storageRef = storage.ref().child('profile_images/${user.uid}');
-    final uploadTask = storageRef.putFile(File(_profileImageUrl!));
+    final uploadTask = storageRef.putFile(File(_imageFile!.path));
 
     final snapshot = await uploadTask.whenComplete(() {});
 
@@ -142,10 +140,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     await userDoc.update({'profileImageUrl': downloadUrl});
 
     setState(() {
-      _profileImageUrl = downloadUrl;
+      _imageFile = XFile(downloadUrl);
     });
 
-    Provider.of<ProfileImageProvider>(context, listen: false).setImageFile(XFile(downloadUrl));
+    // 업데이트된 URL을 ProfileImageProvider에 설정
+    Provider.of<ProfileImageProvider>(context, listen: false).setImageFile(_imageFile);
   }
 
   @override
@@ -170,16 +169,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     radius: 50,
                     backgroundColor: Colors.grey[300],
                     child: ClipOval(
-                      child: _profileImageUrl != null
-                          ? (_profileImageUrl!.startsWith('http')
+                      child: _imageFile != null
+                          ? (kIsWeb
                           ? Image.network(
-                        _profileImageUrl!,
+                        _imageFile!.path,
                         fit: BoxFit.cover,
                         width: 100,
                         height: 100,
                       )
                           : Image.file(
-                        File(_profileImageUrl!),
+                        File(_imageFile!.path),
                         fit: BoxFit.cover,
                         width: 100,
                         height: 100,

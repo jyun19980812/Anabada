@@ -118,7 +118,7 @@ class AccountScreen extends StatelessWidget {
 
 class _ProfileInfoRow extends StatelessWidget {
   final int totalPoints;
-  final int totalRecycled;
+  final double totalRecycled;
 
   const _ProfileInfoRow({Key? key, required this.totalPoints, required this.totalRecycled}) : super(key: key);
 
@@ -138,7 +138,7 @@ class _ProfileInfoRow extends StatelessWidget {
     );
   }
 
-  Widget _singleItem(BuildContext context, String title, int value) => Column(
+  Widget _singleItem(BuildContext context, String title, value) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Padding(
