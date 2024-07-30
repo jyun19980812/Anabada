@@ -4,11 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 
-import '/settings/edit.dart';
 import '/settings/image_provider.dart';
 
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +38,14 @@ class AccountScreen extends StatelessWidget {
                     children: [
                       FloatingActionButton.extended(
                         onPressed: () {ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text("Friend request sent!"),
                             duration: Duration(seconds: 2),
                           ),
                         );},
                         heroTag: 'friend_request',
                         elevation: 0,
-                        backgroundColor: Color(0xFF009e73),
+                        backgroundColor: const Color(0xFF009e73),
                         label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
                         icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
                       ),
@@ -55,13 +54,13 @@ class AccountScreen extends StatelessWidget {
                         onPressed: () {showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text("Send a Message"),
-                            content: TextField(
+                            title: const Text("Send a Message"),
+                            content: const TextField(
                               decoration: InputDecoration(hintText: "Enter your message here"),
                             ),
                             actions: [
                               TextButton(
-                                child: Text("Send"),
+                                child: const Text("Send"),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
@@ -71,7 +70,7 @@ class AccountScreen extends StatelessWidget {
                         );},
                         heroTag: 'message',
                         elevation: 0,
-                        backgroundColor: Color(0xFF0072b2),
+                        backgroundColor: const Color(0xFF0072b2),
                         label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
                         icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
                       ),
@@ -90,7 +89,7 @@ class AccountScreen extends StatelessWidget {
 }
 
 class _ProfileInfoRow extends StatelessWidget {
-  const _ProfileInfoRow({Key? key}) : super(key: key);
+  const _ProfileInfoRow();
 
   final List<ProfileInfoItem> _items = const [
     ProfileInfoItem("Friends", 200),
@@ -145,19 +144,19 @@ class ProfileInfoItem {
 }
 
 class _TopPortion extends StatefulWidget {
-  const _TopPortion({Key? key}) : super(key: key);
+  const _TopPortion();
 
   @override
   State<_TopPortion> createState() => _TopPortionState();
 }
 
 class _TopPortionState extends State<_TopPortion> {
-  ImageProvider<Object>? _image = const AssetImage('assets/default.jpg'); // Default image path
+  final ImageProvider<Object> _image = const AssetImage('assets/default.jpg'); // Default image path
 
   Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
+    final ImagePicker picker = ImagePicker();
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         print("Selected image path: ${image.path}");  // 로그에 경로 출력
         setState(() {
@@ -209,7 +208,7 @@ class _TopPortionState extends State<_TopPortion> {
                   ),
                 ),
                 child: profileImageProvider.imageFile == null
-                      ? Icon(Icons.person, size: 100, color: Colors.white)  // 사진이 없으면 아이콘
+                      ? const Icon(Icons.person, size: 100, color: Colors.white)  // 사진이 없으면 아이콘
                       : null, // 있으면 아무것도 안 띄움
               ),
             ),

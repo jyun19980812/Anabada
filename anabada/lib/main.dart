@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -28,14 +27,13 @@ void main() async {
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
-
     ],
     child: const MyApp(),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +57,7 @@ class MyApp extends StatelessWidget {
 }
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({Key? key}) : super(key: key);
+  const RootScreen({super.key});
 
   @override
   _RootScreenState createState() => _RootScreenState();
@@ -92,7 +90,7 @@ class _RootScreenState extends State<RootScreen> {
 }
 
 class ResponsiveNavBarPage extends StatefulWidget {
-  const ResponsiveNavBarPage({Key? key}) : super(key: key);
+  const ResponsiveNavBarPage({super.key});
 
   @override
   _ResponsiveNavBarPageState createState() => _ResponsiveNavBarPageState();
@@ -112,7 +110,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
       const RewardScreen(),
       RecycleScreen(onTabTapped: _onTabTapped),
       const PointsScreen(),
-      InformationScreen(),
+      const InformationScreen(),
     ]);
   }
 
@@ -205,7 +203,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
         },
         title: Text(
           item,
-          style: TextStyle(
+          style: const TextStyle(
               fontWeight: FontWeight.w700, color: Color(0xFF009E73)),
         ),
       ))
@@ -277,7 +275,7 @@ final List<String> _menuItems = <String>[
 enum Menu { itemOne, itemTwo, itemThree }
 
 class _ProfileIcon extends StatelessWidget {
-  const _ProfileIcon({Key? key}) : super(key: key);
+  const _ProfileIcon();
 
   @override
   Widget build(BuildContext context) {

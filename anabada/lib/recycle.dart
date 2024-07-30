@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'main.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'main.dart';
+
 
 Random random = Random();
 
@@ -59,13 +60,19 @@ class _RecycleScreenState extends State<RecycleScreen> {
           children: [
             const Text(
               "Let's Recycle!",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color:Color(0xFF009E73)),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF009E73)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             const Text(
               "Check whether you can recycle your trash!\n\nAlso, you can earn points by taking picture of your trash, getting approved by Gemini API, and submitting picture of recycling bin!",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color:Color(0xFF009E73)),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF009E73)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -159,7 +166,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
   }
 
   void initializeModel() {
-    final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY';  // Replace with your actual API key
+    final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
     model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
   }
 
@@ -176,7 +183,6 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
       setState(() {
         result = response.text ?? "Error checking recyclability.";
       });
-
     } catch (e) {
       setState(() {
         result = "Error checking recyclability: $e";
@@ -207,7 +213,11 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF009E73))),
+            Text(result,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF009E73))),
           ],
         ),
       ),
@@ -227,34 +237,96 @@ class RecyclingScreen1 extends StatefulWidget {
 
 class _RecyclingScreen1State extends State<RecyclingScreen1> {
   String result = "Recycling...";
+  double? trashWeight; // Variable to store the estimated weight
 
   @override
   void initState() {
     super.initState();
-    checkRecyclability();
+    checkDailyPoints();
+  }
+
+  Future<void> checkDailyPoints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final userDoc =
+      await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+      Timestamp? lastUpdated = userDoc.data()?['last_updated'];
+
+      final now = Timestamp.now();
+      final today = DateTime(now.toDate().year, now.toDate().month, now.toDate().day);
+      final lastUpdatedDay = lastUpdated != null
+          ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+          lastUpdated.toDate().day)
+          : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+      if (today.isAfter(lastUpdatedDay)) {
+        dailyPoints = 0;
+      }
+
+      if (dailyPoints >= 100) {
+        setState(() {
+          result = "Daily points limit reached. Try again tomorrow.";
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      } else {
+        checkRecyclability();
+      }
+    } else {
+      print("No user is currently logged in.");
+    }
   }
 
   Future<void> checkRecyclability() async {
     try {
-      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY';  // Replace with your actual API key
+      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
       final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
 
       final imageBytes = await widget.imageFile.readAsBytes();
-      final prompt = TextPart("Is this item recyclable?");
+      final prompt1 = TextPart("Is this item recyclable?");
+      final prompt2 = TextPart(
+          "Estimate the weight of the trash in lbs and respond with the number only.");
       final imagePart = DataPart('image/jpeg', imageBytes);
 
-      final response = await model.generateContent([
-        Content.multi([prompt, imagePart])
+      final response1 = await model.generateContent([
+        Content.multi([prompt1, imagePart])
       ]);
 
-      final apiResult = response.text ?? "Error verifying recyclability.";
-      if (apiResult.contains("yes") || apiResult.contains("Yes")) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TakingOutScreen(widget.onTabTapped),
-          ),
-        );
+      final apiResult1 = response1.text ?? "Error verifying recyclability.";
+      if (apiResult1.contains("yes") || apiResult1.contains("Yes")) {
+        final response2 = await model.generateContent([
+          Content.multi([prompt2, imagePart])
+        ]);
+        final apiResult2 = response2.text ?? "Error estimating weight.";
+        trashWeight = double.tryParse(apiResult2); // Save the estimated weight
+        if (trashWeight != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TakingOutScreen(widget.onTabTapped, trashWeight!),
+            ),
+          );
+        } else {
+          setState(() {
+            result = "Error estimating weight. Please try again.";
+          });
+          Future.delayed(Duration(seconds: 5), () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResponsiveNavBarPage(),
+              ),
+            );
+          });
+        }
       } else {
         setState(() {
           result = "This item is not recyclable.";
@@ -307,8 +379,9 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
 
 class TakingOutScreen extends StatefulWidget {
   final Function(int) onTabTapped;
+  final double trashWeight;
 
-  const TakingOutScreen(this.onTabTapped, {super.key});
+  const TakingOutScreen(this.onTabTapped, this.trashWeight, {super.key});
 
   @override
   State<TakingOutScreen> createState() => _TakingOutScreenState();
@@ -330,7 +403,7 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  RecyclingScreen2(imageFile, widget.onTabTapped)),
+                  RecyclingScreen2(imageFile, widget.onTabTapped, widget.trashWeight)),
         );
       }
     } catch (e) {
@@ -361,7 +434,7 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
               height: 300,
               child: _imageFile != null
                   ? Image.file(File(_imageFile!.path))
-                  : Text("Please take a photo you taking out trash",
+                  : Text("Please take a photo of you taking out trash",
                   textAlign: TextAlign.center),
             ),
             SizedBox(height: 20),
@@ -387,8 +460,9 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
 class RecyclingScreen2 extends StatefulWidget {
   final XFile imageFile;
   final Function(int) onTabTapped;
+  final double trashWeight;
 
-  RecyclingScreen2(this.imageFile, this.onTabTapped);
+  RecyclingScreen2(this.imageFile, this.onTabTapped, this.trashWeight);
 
   @override
   _RecyclingScreen2State createState() => _RecyclingScreen2State();
@@ -396,49 +470,142 @@ class RecyclingScreen2 extends StatefulWidget {
 
 class _RecyclingScreen2State extends State<RecyclingScreen2> {
   String result = "Now Recycling...";
-  int recyclePoint = random.nextInt(50) + 1; // 1~50 사이의 랜덤 포인트
+  int recyclePoint = random.nextInt(20) + 1; // 1~20 사이의 랜덤 포인트
 
   @override
   void initState() {
     super.initState();
-    verifyRecyclingBin();
+    checkDailyPoints();
   }
+
+  Future<void> checkDailyPoints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+      Timestamp? lastUpdated = userDoc.data()?['last_updated'];
+
+      final now = Timestamp.now();
+      final today = DateTime(now.toDate().year, now.toDate().month, now.toDate().day);
+      final lastUpdatedDay = lastUpdated != null
+          ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+          lastUpdated.toDate().day)
+          : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+      if (today.isAfter(lastUpdatedDay)) {
+        dailyPoints = 0;
+      }
+
+      if (dailyPoints >= 100) {
+        setState(() {
+          result = "Daily points limit reached. Try again tomorrow.";
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      } else {
+        verifyRecyclingBin();
+      }
+    } else {
+      print("No user is currently logged in.");
+    }
+  }
+
 
   Future<void> verifyRecyclingBin() async {
     try {
-      // Initialize Gemini API model
-      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY';  // Replace with your actual API key
+      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
       final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
 
-      // Read image bytes
       final imageBytes = await widget.imageFile.readAsBytes();
       final prompt = TextPart("Is this a recycling trash bin?");
       final imagePart = DataPart('image/jpeg', imageBytes);
 
-      // Send image to Gemini API for verification
       final response = await model.generateContent([
         Content.multi([prompt, imagePart])
       ]);
 
-      // Check API response
       final apiResult = response.text ?? "Error verifying recycling bin.";
       if (apiResult.contains("yes") || apiResult.contains("Yes")) {
-        // If the image is verified as a recycling bin, award points
         final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
           final userId = user.uid;
 
-          await FirebaseFirestore.instance.collection('recycle_events').add({
-            'user_id': userId,
-            'recycle_timestamp': Timestamp.now(),
-            'points_awarded': recyclePoint,
-          });
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+          int newTotalPoints = userDoc['total_points'] + recyclePoint;
+          double newTotalRecycled = userDoc['total_recycled'] + await widget.trashWeight;
+          int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+          Timestamp? lastUpdated =
+          userDoc.data()?['last_updated'];
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => GetPointScreen(recyclePoint, widget.onTabTapped)),
-          );
+          final now = Timestamp.now();
+          final today = DateTime(
+              now.toDate().year, now.toDate().month, now.toDate().day);
+          final lastUpdatedDay = lastUpdated != null
+              ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+              lastUpdated.toDate().day)
+              : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+          if (today.isAfter(lastUpdatedDay)) {
+            dailyPoints = 0;
+          }
+
+          if (dailyPoints + recyclePoint <= 100) {
+            dailyPoints += recyclePoint;
+
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .update({
+              'total_points': newTotalPoints,
+              'last_updated': now,
+              'total_recycled': newTotalRecycled,
+            });
+
+            await FirebaseFirestore.instance.collection('point_events').add({
+              'user_id': userId,
+              'point_timestamp': now,
+              'point_earned': true,
+              'point_amount': recyclePoint,
+            });
+
+            await FirebaseFirestore.instance
+                .collection('recycle_events')
+                .add({
+              'user_id': userId,
+              'recycle_timestamp': now,
+              'points_awarded': recyclePoint,
+              'amount_recycled': widget.trashWeight, // Store the weight
+            });
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      GetPointScreen(recyclePoint, widget.onTabTapped)),
+            );
+          } else {
+            setState(() {
+              result = "Daily points limit reached. Try again tomorrow.";
+            });
+            Future.delayed(Duration(seconds: 5), () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ResponsiveNavBarPage(),
+                ),
+              );
+            });
+          }
         } else {
           print("No user is currently logged in.");
         }
@@ -484,7 +651,7 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result)
+            Text(result),
           ],
         ),
       ),
