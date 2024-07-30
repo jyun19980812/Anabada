@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/settings/edit.dart';
 import '/settings/image_provider.dart';
@@ -17,85 +19,108 @@ class AccountScreen extends StatelessWidget {
         title: const Text('Account'),
         backgroundColor: const Color(0xFF009E73),
       ),
-      body: Column(
-        children: [
-          const Expanded(flex: 2, child: _TopPortion()),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Text(
-                    "John Dow",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("User data not found"));
+          }
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          var username = userData['username'] ?? 'No Name';
+          var fullname = userData['fullname'] ?? '';
+          var totalPoints = userData['total_points'] ?? 0;
+          var totalRecycled = userData['total_recycled'] ?? 0;
+          return Column(
+            children: [
+              const Expanded(flex: 2, child: _TopPortion()),
+              Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
                     children: [
-                      FloatingActionButton.extended(
-                        onPressed: () {ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Friend request sent!"),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );},
-                        heroTag: 'friend_request',
-                        elevation: 0,
-                        backgroundColor: Color(0xFF009e73),
-                        label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
-                        icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
-                      ),
-                      const SizedBox(width: 16.0),
-                      FloatingActionButton.extended(
-                        onPressed: () {showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text("Send a Message"),
-                            content: TextField(
-                              decoration: InputDecoration(hintText: "Enter your message here"),
+                      RichText(
+                        text: TextSpan(
+                          text: username,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: ' ($fullname)',
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            actions: [
-                              TextButton(
-                                child: Text("Send"),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          ),
-                        );},
-                        heroTag: 'message',
-                        elevation: 0,
-                        backgroundColor: Color(0xFF0072b2),
-                        label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
-                        icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FloatingActionButton.extended(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Friend request sent!"),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            heroTag: 'friend_request',
+                            elevation: 0,
+                            backgroundColor: Color(0xFF009e73),
+                            label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
+                            icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
+                          ),
+                          const SizedBox(width: 16.0),
+                          FloatingActionButton.extended(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text("Send a Message"),
+                                  content: TextField(
+                                    decoration: InputDecoration(hintText: "Enter your message here"),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: Text("Send"),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            heroTag: 'message',
+                            elevation: 0,
+                            backgroundColor: Color(0xFF0072b2),
+                            label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
+                            icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _ProfileInfoRow(totalPoints: totalPoints, totalRecycled: totalRecycled)
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const _ProfileInfoRow()
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class _ProfileInfoRow extends StatelessWidget {
-  const _ProfileInfoRow({Key? key}) : super(key: key);
+  final int totalPoints;
+  final int totalRecycled;
 
-  final List<ProfileInfoItem> _items = const [
-    ProfileInfoItem("Friends", 200),
-    ProfileInfoItem("Recycled (lbs)", 50),
-  ];
+  const _ProfileInfoRow({Key? key, required this.totalPoints, required this.totalRecycled}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -104,26 +129,22 @@ class _ProfileInfoRow extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 400),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: _items
-            .map((item) => Expanded(
-            child: Row(
-              children: [
-                if (_items.indexOf(item) != 0) const VerticalDivider(),
-                Expanded(child: _singleItem(context, item)),
-              ],
-            )))
-            .toList(),
+        children: [
+          _singleItem(context, 'Points', totalPoints),
+          const VerticalDivider(),
+          _singleItem(context, 'Recycled', totalRecycled),
+        ],
       ),
     );
   }
 
-  Widget _singleItem(BuildContext context, ProfileInfoItem item) => Column(
+  Widget _singleItem(BuildContext context, String title, int value) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          item.value.toString(),
+          value.toString(),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -131,17 +152,11 @@ class _ProfileInfoRow extends StatelessWidget {
         ),
       ),
       Text(
-        item.title,
+        title,
         style: Theme.of(context).textTheme.bodySmall,
       )
     ],
   );
-}
-
-class ProfileInfoItem {
-  final String title;
-  final int value;
-  const ProfileInfoItem(this.title, this.value);
 }
 
 class _TopPortion extends StatefulWidget {
@@ -152,24 +167,6 @@ class _TopPortion extends StatefulWidget {
 }
 
 class _TopPortionState extends State<_TopPortion> {
-  ImageProvider<Object>? _image = const AssetImage('assets/default.jpg'); // Default image path
-
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        print("Selected image path: ${image.path}");  // 로그에 경로 출력
-        setState(() {
-          // _image = FileImage(File(image.path));  // 이미지 업데이트
-          Provider.of<ProfileImageProvider>(context, listen: false).setImageFile(image); // Provider로 이미지 업뎃
-        });
-      }
-    } catch (e) {
-      print("Image pick error: $e");  // 에러 로깅
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final profileImageProvider = Provider.of<ProfileImageProvider>(context);
@@ -191,7 +188,12 @@ class _TopPortionState extends State<_TopPortion> {
         Align(
           alignment: Alignment.bottomCenter,
           child: GestureDetector(
-            onTap: _pickImage,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+              );
+            },
             child: SizedBox(
               width: 150,
               height: 150,
@@ -201,16 +203,14 @@ class _TopPortionState extends State<_TopPortion> {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: profileImageProvider.imageFile != null
-                        ? (kIsWeb
-                          ? NetworkImage(profileImageProvider.imageFile!.path) // 웹에서 테스트 시 오류 방지
-                          : FileImage(File(profileImageProvider.imageFile!.path)) as ImageProvider)
+                    image: profileImageProvider.imageUrl != null
+                        ? NetworkImage(profileImageProvider.imageUrl!)
                         : const AssetImage('assets/default.jpg'),
                   ),
                 ),
-                child: profileImageProvider.imageFile == null
-                      ? Icon(Icons.person, size: 100, color: Colors.white)  // 사진이 없으면 아이콘
-                      : null, // 있으면 아무것도 안 띄움
+                child: profileImageProvider.imageUrl == null
+                    ? Icon(Icons.person, size: 100, color: Colors.white)
+                    : null,
               ),
             ),
           ),
@@ -219,3 +219,4 @@ class _TopPortionState extends State<_TopPortion> {
     );
   }
 }
+

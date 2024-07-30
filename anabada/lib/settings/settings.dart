@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/settings/font_size_provider.dart';
 import '/settings/edit.dart';
+import './reward_history.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,13 +13,14 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final Map<String, List<String>> settings = {
-    'Account': ['Change Profile'],
+    'Account': ['Change Profile', 'Reward History'],
     'General': ['Set the unit in kg'],
-    'Notification': ['알람 권한 허용/제거'],
+    'Notification': ['알람 권한 허용/제거'], // AOS의 Settings에서 알람 끌 수 있게 하도록...
     'Accessibility': ['접근성 Talkback', 'Font Size', 'Dark Mode'],
   };
 
   bool _isKgEnabled = false;
+  bool _isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
                 );
-              } else if (item == 'Font Size') {
+              } else if (item == 'Dark Mode') {
+                return SettingsTile(
+                  title: item,
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  trailing: Switch(
+                    value: _isDarkMode,
+                    activeColor: const Color(0xff29dead),
+                    onChanged: (bool value) {
+                      setState(() {
+                        _isDarkMode = value;
+                      });
+                    },
+                  ),
+                );
+              }else if (item == 'Font Size') {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
@@ -73,16 +89,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }).toList(),
                   ),
                 );
-              } else if (item == 'Change Profile'){
+              } else if (item == 'Change Profile' || item == 'Reward History'){
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   trailing: const Icon(Icons.arrow_forward),
                   onTap:(){
+                    if (item == 'Change Profile'){
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const EditProfileScreen()),
                       );
+                    }
+                    else if (item == 'Reward History'){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RewardHistoryScreen()),
+                      );
+                    }
                     },
                 );
               }
