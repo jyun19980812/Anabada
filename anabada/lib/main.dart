@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
-import 'dart:io';
+import 'firebase_options.dart';
 
 import 'home.dart';
 import 'reward.dart';
@@ -22,7 +25,9 @@ import 'settings/image_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await initializeFirebase();
+  await FirebaseAppCheck.instance.activate();
+
   runApp(MultiProvider(
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
@@ -30,6 +35,12 @@ void main() async {
     ],
     child: const MyApp(),
   ));
+}
+
+Future<void> initializeFirebase() async {
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -51,7 +62,7 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.black,
         ),
       ),
-      home: const RootScreen(), // 변경된 부분
+      home: const RootScreen(),
     );
   }
 }
@@ -281,12 +292,9 @@ class _ProfileIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileImageProvider = Provider.of<ProfileImageProvider>(context);
     return PopupMenuButton<Menu>(
-      icon: profileImageProvider.imageFile != null
+      icon: profileImageProvider.imageUrl != null
           ? CircleAvatar(
-        backgroundImage: kIsWeb
-            ? NetworkImage(profileImageProvider.imageFile!.path)
-            : FileImage(File(profileImageProvider.imageFile!.path))
-        as ImageProvider,
+        backgroundImage: NetworkImage(profileImageProvider.imageUrl!),
       )
           : const Icon(Icons.person), // 사진 없으면 person 아이콘 아니면 사진
       offset: const Offset(0, 40),
