@@ -7,7 +7,7 @@ import 'find_email.dart';
 import 'find_password.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter both email and password.')),
+        const SnackBar(content: Text('Please enter both email and password.')),
       );
     }
   }

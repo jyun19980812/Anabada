@@ -4,12 +4,12 @@ import 'settings/font_size_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   final Function(int) onTabTapped;
-  const HomeScreen({Key? key, required this.onTabTapped}) : super(key: key);
+  const HomeScreen({super.key, required this.onTabTapped});
 
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    final double baseFontSize = 20.0; // 폰트 S M L 용도 -> 기본 크기 바꾸고 싶으면 여기서 조정
+    const double baseFontSize = 20.0; // 폰트 S M L 용도 -> 기본 크기 바꾸고 싶으면 여기서 조정
     final double cardHeight = MediaQuery.of(context).size.height * 0.5;
     final double cardWidth = MediaQuery.of(context).size.width - 32; // 패딩을 제외한 너비
 

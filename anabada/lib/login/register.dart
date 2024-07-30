@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location/location.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'login.dart';
 import '../main.dart';
 
@@ -16,25 +19,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController fullnameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  LocationData? _locationData;
+
+  String hashPassword(String password) {
+    var bytes = utf8.encode(password); // data being hashed
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Future<void> _getLocation() async {
+    Location location = Location();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+  }
+
 
   void _onSignUp() async {
     if (emailController.text.isNotEmpty &&
         fullnameController.text.isNotEmpty &&
         passwordController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty) {
+        phoneController.text.isNotEmpty &&
+        _locationData != null) {
       try {
         UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
 
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-          'fullname': fullnameController.text,
-          'password': passwordController.text,
-          'phone': phoneController.text,
-          'email': emailController.text,
-        });
+        if (_locationData != null && _locationData!.latitude != null && _locationData!.longitude != null) {
+          await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+            'fullname': fullnameController.text,
+            'password': hashPassword(passwordController.text), // 해시된 비밀번호 저장
+            'phone': phoneController.text,
+            'email': emailController.text,
+            'total_recycled': 0,
+            'total_points': 0,
+            'location': GeoPoint(_locationData!.latitude!, _locationData!.longitude!), // 위치 정보 저장
+          });
+        } else {
+          print('Location data is null or missing latitude/longitude');
+        }
 
         // 회원가입이 성공하면 메인 화면으로 이동합니다.
         Navigator.pushReplacement(
@@ -57,10 +101,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred. Please try again.')),
         );
+        print('Error: $e'); // 에러 로그 추가
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('All fields are required.')),
+        SnackBar(content: Text('All fields are required and permissions must be granted.')),
       );
     }
   }
@@ -138,12 +183,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _onSignUp,
+                onPressed: () async {
+                  await _getLocation();
+                  _onSignUp();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF009E73),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -162,8 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
                     child: const Text(
@@ -181,6 +227,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       backgroundColor: const Color(0xFF009E73),
-      );
+    );
   }
 }
