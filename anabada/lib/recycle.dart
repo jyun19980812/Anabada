@@ -243,7 +243,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
             SizedBox(height: 20),
             Text(result,
                 style: TextStyle(
-                    fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF009E73))),
           ],
