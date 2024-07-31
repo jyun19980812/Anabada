@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'main.dart';
 
-
 Random random = Random();
 
 class RecycleScreen extends StatefulWidget {
@@ -68,7 +67,7 @@ class _RecycleScreenState extends State<RecycleScreen> {
             ),
             const SizedBox(height: 20),
             const Text(
-              "Check whether you can recycle your trash!\n\nAlso, you can earn points by taking picture of your trash, getting approved by Gemini API, and submitting picture of recycling bin!",
+              "Check whether you can recycle your trash!",
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -76,65 +75,73 @@ class _RecycleScreenState extends State<RecycleScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  getImage(ImageSource.gallery, "check");
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF009E73),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.question_mark, size: 100, color: Colors.white),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Can I Recycle?",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                      textAlign: TextAlign.center,
+            Flexible(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        getImage(ImageSource.gallery, "check");
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF009E73),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.question_mark, size: 100, color: Colors.white),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "Can I Recycle?",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Take Picture and Ask Gemini whether you can recycle your trash!",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Take Picture and Ask Gemini whether you can recycle your trash!",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                      textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        getImage(ImageSource.gallery, "certify");
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF009E73),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.attach_money, size: 100, color: Colors.white),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "Ready to Earn Points?",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  getImage(ImageSource.gallery, "certify");
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF009E73),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.attach_money, size: 100, color: Colors.white),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Ready to Earn Points?",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

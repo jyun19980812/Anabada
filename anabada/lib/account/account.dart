@@ -4,7 +4,7 @@ import '../settings/setting_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../settings/edit.dart';
-import ../settings/image_provider.dart';
+import '../settings/image_provider.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
