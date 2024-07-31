@@ -4,7 +4,6 @@ import 'package:anabada/settings/setting_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,7 +47,7 @@ Future<void> initializeFirebase() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +71,7 @@ class MyApp extends StatelessWidget {
 }
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({Key? key}) : super(key: key);
+  const RootScreen({super.key});
 
   @override
   _RootScreenState createState() => _RootScreenState();
@@ -105,7 +104,7 @@ class _RootScreenState extends State<RootScreen> {
 }
 
 class ResponsiveNavBarPage extends StatefulWidget {
-  const ResponsiveNavBarPage({Key? key}) : super(key: key);
+  const ResponsiveNavBarPage({super.key});
 
   @override
   _ResponsiveNavBarPageState createState() => _ResponsiveNavBarPageState();
@@ -125,7 +124,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
       const RewardScreen(),
       RecycleScreen(onTabTapped: _onTabTapped),
       const PointsScreen(),
-      InformationScreen(),
+      const InformationScreen(),
     ]);
   }
 
@@ -160,8 +159,8 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/logo-no-background.png',
-                  height: 35,
+                  'assets/logo_no_background_color_title.png',
+                  height: 200,
                 ),
                 if (isLargeScreen) Expanded(child: _navBarItems(context))
               ],
@@ -218,7 +217,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
         },
         title: Text(
           item,
-          style: TextStyle(
+          style: const TextStyle(
               fontWeight: FontWeight.w700, color: Color(0xFF009E73)),
         ),
       ))
@@ -290,7 +289,7 @@ final List<String> _menuItems = <String>[
 enum Menu { itemOne, itemTwo, itemThree }
 
 class _ProfileIcon extends StatelessWidget {
-  const _ProfileIcon({Key? key}) : super(key: key);
+  const _ProfileIcon();
 
   @override
   Widget build(BuildContext context) {

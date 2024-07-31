@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
 import 'login.dart';
 import 'find_password.dart';
 
 class FindIdScreen extends StatefulWidget {
-  const FindIdScreen({Key? key}) : super(key: key);
+  const FindIdScreen({super.key});
 
   @override
   _FindIdScreenState createState() => _FindIdScreenState();
