@@ -1,17 +1,18 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../settings/setting_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../settings/edit.dart';
-import '/settings/image_provider.dart';
+import '../settings/image_provider.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final settingOptions = Provider.of<SettingOptions>(context, listen: false); // image처럼 provider로 사용
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Account'),
@@ -30,83 +31,95 @@ class AccountScreen extends StatelessWidget {
           var username = userData['username'] ?? 'No Name';
           var fullname = userData['fullname'] ?? '';
           var totalPoints = userData['total_points'] ?? 0;
-          var totalRecycled = userData['total_recycled'] ?? 0;
-          return Column(
-            children: [
-              const Expanded(flex: 2, child: _TopPortion()),
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          text: username,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: ' ($fullname)',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+          var totalRecycled = (userData['total_recycled'] ?? 0).toDouble();
+
+          return FutureBuilder<bool>(
+            future: settingOptions.isKgEnabled(),
+            builder: (context, kgSnapshot) {
+              if (kgSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              bool isGramEnabled = kgSnapshot.data ?? false;
+              double recycledValue = isGramEnabled ? totalRecycled * 453.592 : totalRecycled;
+
+              return Column(
+                children: [
+                  const Expanded(flex: 2, child: _TopPortion()),
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
                         children: [
-                          FloatingActionButton.extended(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Friend request sent!"),
-                                  duration: Duration(seconds: 2),
+                          RichText(
+                            text: TextSpan(
+                              text: username,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: ' ($fullname)',
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
-                              );
-                            },
-                            heroTag: 'friend_request',
-                            elevation: 0,
-                            backgroundColor: Color(0xFF009e73),
-                            label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
-                            icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 16.0),
-                          FloatingActionButton.extended(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text("Send a Message"),
-                                  content: TextField(
-                                    decoration: InputDecoration(hintText: "Enter your message here"),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text("Send"),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
+                          const SizedBox(height: 16.0),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FloatingActionButton.extended(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Friend request sent!"),
+                                      duration: Duration(seconds: 2),
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                            heroTag: 'message',
-                            elevation: 0,
-                            backgroundColor: Color(0xFF0072b2),
-                            label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
-                            icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
+                                  );
+                                },
+                                heroTag: 'friend_request',
+                                elevation: 0,
+                                backgroundColor: Color(0xFF009e73),
+                                label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
+                                icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
+                              ),
+                              const SizedBox(width: 16.0),
+                              FloatingActionButton.extended(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text("Send a Message"),
+                                      content: TextField(
+                                        decoration: InputDecoration(hintText: "Enter your message here"),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          child: Text("Send"),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                heroTag: 'message',
+                                elevation: 0,
+                                backgroundColor: Color(0xFF0072b2),
+                                label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
+                                icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 16.0),
+                          _ProfileInfoRow(totalPoints: totalPoints, totalRecycled: recycledValue)
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      _ProfileInfoRow(totalPoints: totalPoints, totalRecycled: totalRecycled)
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           );
         },
       ),
@@ -128,26 +141,27 @@ class _ProfileInfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _singleItem(context, 'Points', totalPoints),
+          _singleItem(context, 'Points', totalPoints.toString()),
           const VerticalDivider(),
-          _singleItem(context, 'Recycled', totalRecycled),
+          _singleItem(context, 'Recycled', totalRecycled.toStringAsFixed(2)),
         ],
       ),
     );
   }
 
-  Widget _singleItem(BuildContext context, String title, value) => Column(
+  Widget _singleItem(BuildContext context, String title, String value) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          value.toString(),
+          value,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
+        
       ),
       Text(
         title,
@@ -217,4 +231,3 @@ class _TopPortionState extends State<_TopPortion> {
     );
   }
 }
-

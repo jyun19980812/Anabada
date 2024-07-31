@@ -296,22 +296,22 @@ class _RewardState extends State<Reward> {
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Amazon', '\$100'),
                   ),
                   GiftCard(
-                    image: './assets/walmartsgiftcard.png',
+                    image: './assets/walmartgiftcard.png',
                     value: '\$10',
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$10'),
                   ),
                   GiftCard(
-                    image: './assets/walmartsgiftcard.png',
+                    image: './assets/walmartgiftcard.png',
                     value: '\$25',
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$25'),
                   ),
                   GiftCard(
-                    image: './assets/walmartsgiftcard.png',
+                    image: './assets/walmartgiftcard.png',
                     value: '\$50',
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$50'),
                   ),
                   GiftCard(
-                    image: './assets/walmartsgiftcard.png',
+                    image: './assets/giftcards/walmartgiftcard.png',
                     value: '\$100',
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$100'),
                   ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:anabada/settings/setting_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,6 +24,7 @@ import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
@@ -32,6 +34,7 @@ void main() async {
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
+      Provider(create: (_) => SettingOptions()),
     ],
     child: const MyApp(),
   ));
@@ -156,8 +159,8 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/logo-no-background.png',
-                  height: 35,
+                  'assets/logo_no_background_color_title.png',
+                  height: 200,
                 ),
                 if (isLargeScreen) Expanded(child: _navBarItems(context))
               ],

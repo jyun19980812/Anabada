@@ -73,7 +73,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'phone': phoneController.text,
             'email': emailController.text,
             'total_recycled': 0,
-            'total_points': 0,
+            'total_points': 0.0,
             'location': GeoPoint(_locationData!.latitude!, _locationData!.longitude!), // 위치 정보 저장
           });
         } else {

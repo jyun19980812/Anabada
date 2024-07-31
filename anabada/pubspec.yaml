@@ -40,13 +40,13 @@ dependencies:
   firebase_core: ^2.32.0
   cloud_firestore: ^4.8.0
   firebase_auth: ^4.8.0
-  firebase_storage: ^11.7.7
   firebase_app_check: ^0.2.2+7
   shared_preferences: ^2.2.3
   mailer: ^6.1.2
   flutter_gemini: ^2.0.4
   google_generative_ai: ^0.4.3
   location: ^7.0.0
+  firebase_storage: ^11.7.7
   crypto: ^3.0.3
   flutter_email_sender: ^6.0.3
 
