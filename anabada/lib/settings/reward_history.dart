@@ -21,7 +21,6 @@ class _RewardHistoryScreenState extends State<RewardHistoryScreen> {
     currentUser = FirebaseAuth.instance.currentUser;
   }
 
-
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
@@ -61,7 +60,7 @@ class _RewardHistoryScreenState extends State<RewardHistoryScreen> {
                 stream: FirebaseFirestore.instance
                     .collection('gift_card_events')
                     .where('user_id', isEqualTo: currentUser!.uid)
-                    .orderBy('card_timestamp', descending: true) // 내림차순 정렬
+                    .orderBy('card_timestamp', descending: true)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
@@ -125,7 +124,12 @@ class RewardCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(date),
+                Text(
+                  date,
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
                 SizedBox(height: 8),
                 Text(
                   description,
@@ -135,7 +139,12 @@ class RewardCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 8),
-                Text(points),
+                Text(
+                  points,
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
               ],
             ),
             Spacer(),

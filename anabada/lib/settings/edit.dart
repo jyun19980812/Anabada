@@ -7,9 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 
-import '/settings/font_size_provider.dart';
-import '/settings/image_provider.dart';
-import '../settings/settings.dart';
+import './font_size_provider.dart';
+import './image_provider.dart';
+import './settings.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -154,7 +154,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Edit'),
+        title: Text(
+          'Profile Edit',
+          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -202,13 +205,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text('Cancel'),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: () async {
                       await _updateProfile();
                     },
-                    child: const Text('Confirm'),
+                    child: Text(
+                      'Confirm',
+                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                    ),
                   ),
                 ],
               ),
@@ -241,7 +250,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Expanded(
               child: TextField(
                 controller: _controllers[key],
-                decoration: InputDecoration(labelText: 'Enter $key'),
+                decoration: InputDecoration(
+                  labelText: 'Enter $key',
+                  labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                ),
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
               ),
             ),
           ],
@@ -269,8 +282,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Expanded(
             child: TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Enter new password'),
+              decoration: InputDecoration(
+                labelText: 'Enter new password',
+                labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+              ),
               obscureText: true,
+              style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
             ),
           ),
         ],
@@ -297,8 +314,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Expanded(
             child: TextField(
               controller: _currentPasswordController,
-              decoration: InputDecoration(labelText: 'Enter current password'),
+              decoration: InputDecoration(
+                labelText: 'Enter current password',
+                labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+              ),
               obscureText: true,
+              style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
             ),
           ),
         ],

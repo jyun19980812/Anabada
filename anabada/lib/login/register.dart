@@ -6,6 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'login.dart';
 import '../main.dart';
+import '../settings/font_size_provider.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -112,6 +114,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -120,10 +124,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 48),
-              const Text(
+              Text(
                 'Register',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: fontSizeProvider.getFontSize(32),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -135,6 +139,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Email',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -148,6 +155,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Full Name',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -162,6 +172,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Password',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -175,6 +188,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Phone',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -195,15 +211,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text('Sign Up'),
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Already Have an Account?',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -212,10 +236,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Log In!',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
