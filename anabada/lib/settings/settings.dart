@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/settings/font_size_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import '/settings/edit.dart';
 import './reward_history.dart';
+import './setting_options.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,15 +15,26 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+
   final Map<String, List<String>> settings = {
     'Account': ['Change Profile', 'Reward History'],
-    'General': ['Set the unit in kg'],
-    'Notification': ['알람 권한 허용/제거'], // AOS의 Settings에서 알람 끌 수 있게 하도록...
-    'Accessibility': ['접근성 Talkback', 'Font Size', 'Dark Mode'],
+    'General': ['Set the unit in grams', 'Font Size'],
   };
 
-  bool _isKgEnabled = false;
-  bool _isDarkMode = false;
+  late SettingOptions _settingOptions;
+  bool _isGramEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _settingOptions = Provider.of<SettingOptions>(context, listen: false);
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    _isGramEnabled = await _settingOptions.isKgEnabled();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,35 +53,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontSize: baseFontSize,
             getFontSize: fontSizeProvider.getFontSize,
             children: entry.value.map((item) {
-              if (item == 'Set the unit in kg') {
+              if (item == 'Set the unit in grams') {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   trailing: Switch(
-                    value: _isKgEnabled,
+                    value: _isGramEnabled,
                     activeColor: const Color(0xff29dead),
                     onChanged: (bool value) {
                       setState(() {
-                        _isKgEnabled = value;
+                        _isGramEnabled = value;
+                        _settingOptions.setKgEnabled(value);
                       });
                     },
                   ),
                 );
-              } else if (item == 'Dark Mode') {
-                return SettingsTile(
-                  title: item,
-                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
-                  trailing: Switch(
-                    value: _isDarkMode,
-                    activeColor: const Color(0xff29dead),
-                    onChanged: (bool value) {
-                      setState(() {
-                        _isDarkMode = value;
-                      });
-                    },
-                  ),
-                );
-              }else if (item == 'Font Size') {
+              } else if (item == 'Font Size') {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
@@ -89,28 +90,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }).toList(),
                   ),
                 );
-              } else if (item == 'Change Profile' || item == 'Reward History'){
+              } else if (item == 'Change Profile' || item == 'Reward History') {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   trailing: const Icon(Icons.arrow_forward),
-                  onTap:(){
-                    if (item == 'Change Profile'){
+                  onTap: () {
+                    if (item == 'Change Profile') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const EditProfileScreen()),
                       );
-                    }
-                    else if (item == 'Reward History'){
+                    } else if (item == 'Reward History') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const RewardHistoryScreen()),
                       );
                     }
-                    },
+                  },
                 );
-              }
-              else {
+              } else {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
@@ -130,7 +129,8 @@ class SettingsSection extends StatelessWidget {
   final double fontSize;
   final double Function(double) getFontSize;
 
-  const SettingsSection({super.key, 
+  const SettingsSection({
+    super.key,
     required this.title,
     required this.children,
     required this.fontSize,
@@ -165,7 +165,8 @@ class SettingsTile extends StatelessWidget {
   final double fontSize;
   final VoidCallback? onTap;
 
-  const SettingsTile({super.key, 
+  const SettingsTile({
+    super.key,
     required this.title,
     this.trailing,
     this.fontSize = 20.0,
