@@ -156,8 +156,8 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/logo-no-background.png',
-                  height: 35,
+                  'assets/logo_no_background_color_title.png',
+                  height: 200,
                 ),
                 if (isLargeScreen) Expanded(child: _navBarItems(context))
               ],

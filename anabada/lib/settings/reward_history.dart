@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '/settings/font_size_provider.dart';
 
 class RewardHistoryScreen extends StatefulWidget {
@@ -10,10 +12,31 @@ class RewardHistoryScreen extends StatefulWidget {
 }
 
 class _RewardHistoryScreenState extends State<RewardHistoryScreen> {
+  User? currentUser;
+  int totalPoints = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUser = FirebaseAuth.instance.currentUser;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     final baseFontSize = 20.0;
+
+    if (currentUser == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Reward History'),
+        ),
+        body: Center(
+          child: Text('Please log in to see your reward history.'),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -34,14 +57,36 @@ class _RewardHistoryScreenState extends State<RewardHistoryScreen> {
             ),
             SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return RewardCard(
-                    date: '2024. 07. 24.',
-                    description: '구매 내역\n스타벅스 \$10',
-                    points: '${(index + 1) * 10000 + 2350} points',
-                    imageUrl: 'assets/starbucksgiftcard.png', // 이미지 경로에 맞게 변경하세요
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('gift_card_events')
+                    .where('user_id', isEqualTo: currentUser!.uid)
+                    .orderBy('card_timestamp', descending: true) // 내림차순 정렬
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  final giftCardEvents = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    itemCount: giftCardEvents.length,
+                    itemBuilder: (context, index) {
+                      final giftCardEvent = giftCardEvents[index];
+                      final date = (giftCardEvent['card_timestamp'] as Timestamp).toDate();
+                      final description = 'Order History\n${giftCardEvent['card_type']}';
+                      final pointsSpent = giftCardEvent['point_spent'];
+                      final points = 'Spent $pointsSpent points';
+                      final imageUrl = 'assets/${giftCardEvent['card_type'].toLowerCase()}giftcard.png';
+
+                      return RewardCard(
+                        date: '${date.year}. ${date.month}. ${date.day}.',
+                        description: description,
+                        points: points,
+                        imageUrl: imageUrl,
+                      );
+                    },
                   );
                 },
               ),
@@ -94,7 +139,7 @@ class RewardCard extends StatelessWidget {
               ],
             ),
             Spacer(),
-            Image.asset(imageUrl, height: 50), // 이미지 크기와 경로에 맞게 조절하세요
+            Image.asset(imageUrl, height: 100),
           ],
         ),
       ),
