@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'main.dart';
+import 'package:provider/provider.dart';
+import './settings/font_size_provider.dart';
 
 Random random = Random();
 
@@ -67,22 +69,24 @@ class _RecycleScreenState extends State<RecycleScreen> {
   }
 
   Widget _buildPortraitLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           "Let's Recycle!",
           style: TextStyle(
-              fontSize: 24,
+              fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
               fontWeight: FontWeight.w700,
               color: Color(0xFF009E73)),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           "Check whether you can recycle your trash!",
           style: TextStyle(
-              fontSize: 16,
+              fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
               fontWeight: FontWeight.w500,
               color: Color(0xFF009E73)),
           textAlign: TextAlign.center,
@@ -100,22 +104,24 @@ class _RecycleScreenState extends State<RecycleScreen> {
   }
 
   Widget _buildLandscapeLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return SingleChildScrollView(
       child: Column(
         children: [
-          const Text(
+          Text(
             "Let's Recycle!",
             style: TextStyle(
-                fontSize: 24,
+                fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF009E73)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             "Check whether you can recycle your trash!",
             style: TextStyle(
-                fontSize: 16,
+                fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF009E73)),
             textAlign: TextAlign.center,
@@ -130,6 +136,8 @@ class _RecycleScreenState extends State<RecycleScreen> {
   }
 
   Widget _buildButton(String title, String subtitle, IconData icon, String buttonId) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return ElevatedButton(
       onPressed: () {
         getImage(ImageSource.gallery, buttonId);
@@ -147,13 +155,13 @@ class _RecycleScreenState extends State<RecycleScreen> {
           const SizedBox(height: 20),
           Text(
             title,
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize),),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),),
             textAlign: TextAlign.center,
           ),
         ],
@@ -219,9 +227,11 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Checking...'),
+        title: Text('Checking...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -233,7 +243,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
             SizedBox(height: 20),
             Text(result,
                 style: TextStyle(
-                    fontSize: 16,
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF009E73))),
           ],
@@ -362,7 +372,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
       setState(() {
         result = "Error verifying recyclability: $e";
       });
-      Future.delayed(Duration(seconds: 5), () {
+      Future.delayed(Duration(seconds: 10), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -375,9 +385,11 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recycling...'),
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -387,7 +399,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
           ],
         ),
       ),
@@ -437,9 +449,11 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Taking Out Trash'),
+        title: Text('Taking Out Trash', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -453,7 +467,7 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
               child: _imageFile != null
                   ? Image.file(File(_imageFile!.path))
                   : Text("Please take a photo of you taking out trash",
-                  textAlign: TextAlign.center),
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
             SizedBox(height: 20),
             _imageFile == null
@@ -657,9 +671,11 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recycling...'),
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -669,7 +685,7 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
           ],
         ),
       ),
@@ -685,6 +701,8 @@ class GetPointScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
         title: Text('Points Earned!'),
@@ -698,7 +716,7 @@ class GetPointScreen extends StatelessWidget {
             Icon(Icons.wallet, size: 100, color: Colors.green),
             SizedBox(height: 20),
             Text("You've got $recyclePoint points!",
-                style: TextStyle(fontSize: 24)),
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -712,7 +730,7 @@ class GetPointScreen extends StatelessWidget {
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Back to Home'),
+              child: Text('Back to Home', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
           ],
         ),
