@@ -120,7 +120,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
       HomeScreen(onTabTapped: _onTabTapped),
       const RewardScreen(),
       RecycleScreen(onTabTapped: _onTabTapped),
-      const PointsScreen(),
+      PointsScreen(),
       const InformationScreen(),
     ]);
   }

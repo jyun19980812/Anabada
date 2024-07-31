@@ -1,11 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import '../settings/edit.dart';
 import '/settings/image_provider.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -190,7 +189,7 @@ class _TopPortionState extends State<_TopPortion> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                MaterialPageRoute(builder: (context) => EditProfileScreen()),
               );
             },
             child: SizedBox(
