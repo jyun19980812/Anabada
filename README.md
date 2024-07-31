@@ -10,6 +10,8 @@
 
 # Project Structure
 
+
+```
 📦 anabada
 ├─ lib
 │  ├─ account.dart #유저 계정과 관련한 정보를 표시, 변경 기
@@ -32,3 +34,5 @@
 ├─ points.dart #유저 별로 누적 포인트, 유저 별 쓰레기 버린 양 등을 보여주는 기능
 ├─ recycle.dart #어플의 메인 기능. Gemini를 이용해 재활용 쓰레기 입증,인증 기능과 인증 시 포인트를 제공하는 기능
 └─ reward.dart #포인트를 통해 어떤 Reward를 구매할 수 있는 지를 보여주는 기능
+```
+
