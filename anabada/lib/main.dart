@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:anabada/settings/setting_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,6 +25,7 @@ import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
@@ -33,6 +35,7 @@ void main() async {
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
+      Provider(create: (_) => SettingOptions()),
     ],
     child: const MyApp(),
   ));
