@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
 
 import './edit.dart';
 import './reward_history.dart';
 import './setting_options.dart';
-import '/settings/font_size_provider.dart';
+import './font_size_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,7 +14,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-
   final Map<String, List<String>> settings = {
     'Account': ['Change Profile', 'Reward History'],
     'General': ['Set the unit in grams', 'Font Size'],
