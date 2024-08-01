@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FontSizeProvider with ChangeNotifier {
+  static const String _fontSizeKey = 'fontSize';
   String _fontSize = 'M';
 
-  // 기본 폰트 크기 바꾸고 싶으면 각 화면의 Widget build 밑의 final 변수 확인
+  FontSizeProvider() {
+    _loadFontSize();
+  }
+
   String get fontSize => _fontSize;
 
-  void setFontSize(String newSize) {
+  Future<void> _loadFontSize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _fontSize = prefs.getString(_fontSizeKey) ?? 'M';
+    notifyListeners();
+  }
+
+  Future<void> setFontSize(String newSize) async {
     _fontSize = newSize;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_fontSizeKey, newSize);
     notifyListeners();
   }
 
