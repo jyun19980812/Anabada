@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'main.dart';
+import 'package:provider/provider.dart';
+import './settings/font_size_provider.dart';
 
 Random random = Random();
 
@@ -53,99 +55,116 @@ class _RecycleScreenState extends State<RecycleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Let's Recycle!",
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF009E73)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Check whether you can recycle your trash!",
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF009E73)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Flexible(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        getImage(ImageSource.gallery, "check");
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF009E73),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(50),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.question_mark, size: 100, color: Colors.white),
-                          const SizedBox(height: 20),
-                          const Text(
-                            "Can I Recycle?",
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Take Picture and Ask Gemini whether you can recycle your trash!",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        getImage(ImageSource.gallery, "certify");
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF009E73),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(50),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.attach_money, size: 100, color: Colors.white),
-                          const SizedBox(height: 20),
-                          const Text(
-                            "Ready to Earn Points?",
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: orientation == Orientation.portrait
+                ? _buildPortraitLayout()
+                : _buildLandscapeLayout(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPortraitLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Let's Recycle!",
+          style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF009E73)),
+          textAlign: TextAlign.center,
         ),
+        const SizedBox(height: 20),
+        Text(
+          "Check whether you can recycle your trash!",
+          style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF009E73)),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: _buildButton("Can I Recycle?", "Take Picture and Ask Gemini whether you can recycle your trash!", Icons.question_mark, "check"),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _buildButton("Ready to Earn Points?", "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!", Icons.attach_money, "certify"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Text(
+            "Let's Recycle!",
+            style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF009E73)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Check whether you can recycle your trash!",
+            style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF009E73)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          _buildButton("Can I Recycle?", "Take Picture and Ask Gemini whether you can recycle your trash!", Icons.question_mark, "check"),
+          const SizedBox(height: 16),
+          _buildButton("Ready to Earn Points?", "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!", Icons.attach_money, "certify"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton(String title, String subtitle, IconData icon, String buttonId) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return ElevatedButton(
+      onPressed: () {
+        getImage(ImageSource.gallery, buttonId);
+      },
+      style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF009E73),
+          foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(50),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10))),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 100, color: Colors.white),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize),),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            subtitle,
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -208,9 +227,11 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Checking...'),
+        title: Text('Checking...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -222,7 +243,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
             SizedBox(height: 20),
             Text(result,
                 style: TextStyle(
-                    fontSize: 16,
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF009E73))),
           ],
@@ -351,7 +372,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
       setState(() {
         result = "Error verifying recyclability: $e";
       });
-      Future.delayed(Duration(seconds: 5), () {
+      Future.delayed(Duration(seconds: 10), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -364,9 +385,11 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recycling...'),
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -376,7 +399,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
           ],
         ),
       ),
@@ -426,9 +449,11 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Taking Out Trash'),
+        title: Text('Taking Out Trash', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -442,7 +467,7 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
               child: _imageFile != null
                   ? Image.file(File(_imageFile!.path))
                   : Text("Please take a photo of you taking out trash",
-                  textAlign: TextAlign.center),
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
             SizedBox(height: 20),
             _imageFile == null
@@ -646,9 +671,11 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recycling...'),
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -658,7 +685,7 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
           children: [
             CircularProgressIndicator(color: Colors.green),
             SizedBox(height: 20),
-            Text(result),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
           ],
         ),
       ),
@@ -674,6 +701,8 @@ class GetPointScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
       appBar: AppBar(
         title: Text('Points Earned!'),
@@ -687,7 +716,7 @@ class GetPointScreen extends StatelessWidget {
             Icon(Icons.wallet, size: 100, color: Colors.green),
             SizedBox(height: 20),
             Text("You've got $recyclePoint points!",
-                style: TextStyle(fontSize: 24)),
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -701,7 +730,7 @@ class GetPointScreen extends StatelessWidget {
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
               ),
-              child: Text('Back to Home'),
+              child: Text('Back to Home', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
           ],
         ),

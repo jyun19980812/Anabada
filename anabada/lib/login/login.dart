@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import '../main.dart';
 import 'register.dart';
 import 'find_email.dart';
 import 'find_password.dart';
+import '/settings/font_size_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -99,6 +101,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final baseFontSize = 20.0;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
@@ -119,6 +124,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Email',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -133,6 +141,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Password',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -151,9 +162,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                   ),
-                  const Text(
+                  Text(
                     'Remember me?',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    ),
                   ),
                 ],
               ),
@@ -168,7 +182,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text('Login'),
+                child: Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Column(
@@ -180,9 +199,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => const FindIdScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot Email?',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                      ),
                     ),
                   ),
                   TextButton(
@@ -192,9 +214,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                      ),
                     ),
                   ),
                 ],
@@ -203,9 +228,12 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Don't have an account?",
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -214,10 +242,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => const RegisterScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Sign Up',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

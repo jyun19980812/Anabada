@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import '../settings/font_size_provider.dart';
 import 'login.dart';
 import 'find_password.dart';
 
@@ -50,6 +52,9 @@ class _FindIdScreenState extends State<FindIdScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
@@ -58,10 +63,10 @@ class _FindIdScreenState extends State<FindIdScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              AutoSizeText(
                 'Find My Email',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: fontSizeProvider.getFontSize(32),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -73,6 +78,9 @@ class _FindIdScreenState extends State<FindIdScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Full Name',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -86,6 +94,9 @@ class _FindIdScreenState extends State<FindIdScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Phone #',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -103,17 +114,23 @@ class _FindIdScreenState extends State<FindIdScreen> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const AutoSizeText(
-                    'Find Email',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    maxLines: 1
+                child: AutoSizeText(
+                  'Find Email',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(height: 16),
               if (isEmailFound || message.isNotEmpty)
                 AutoSizeText(
                   message,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSizeProvider.getFontSize(13),
+                  ),
                   maxLines: 1,
                 ),
               const SizedBox(height: 16),
@@ -127,9 +144,12 @@ class _FindIdScreenState extends State<FindIdScreen> {
                         MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                      ),
                     ),
                   ),
                   TextButton(
@@ -139,10 +159,11 @@ class _FindIdScreenState extends State<FindIdScreen> {
                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Sign In!',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

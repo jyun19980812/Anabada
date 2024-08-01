@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import './settings/font_size_provider.dart';
 
 class PointsScreen extends StatelessWidget {
   @override
@@ -89,12 +92,15 @@ class _AnalysisPageState extends State<AnalysisPage> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    const double baseFontSize = 16.0;
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(fontSizeProvider, baseFontSize),
             SizedBox(height: 16),
             Expanded(
               child: GridView.count(
@@ -106,38 +112,53 @@ class _AnalysisPageState extends State<AnalysisPage> {
                     icon: Icons.recycling,
                     title: 'Total Recycled',
                     value: '${totalRecycled.toStringAsFixed(2)} Pounds',
+                    fontSizeProvider: fontSizeProvider,
+                    baseFontSize: baseFontSize,
                   ),
                   _buildInfoCard(
                     icon: Icons.point_of_sale,
                     title: 'Total Points',
                     value: '$totalPoints P',
+                    fontSizeProvider: fontSizeProvider,
+                    baseFontSize: baseFontSize,
                   ),
-                  _buildSummaryItem('$todayEarned', 'Today Earned'),
-                  _buildSummaryItem('$monthEarned', 'This Month Earned'),
+                  _buildSummaryItem('$todayEarned', 'Today Earned', fontSizeProvider, baseFontSize),
+                  _buildSummaryItem('$monthEarned', 'This Month Earned', fontSizeProvider, baseFontSize),
                 ],
               ),
             ),
             SizedBox(height: 16),
-            _buildAttendance(context),
+            _buildAttendance(context, fontSizeProvider, baseFontSize),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(FontSizeProvider fontSizeProvider, double baseFontSize) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Text(
           'Points',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xff009e73)),
+          style: TextStyle(
+            fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
+            fontWeight: FontWeight.bold,
+            color: Color(0xff009e73),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoCard({required IconData icon, required String title, required String value}) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required FontSizeProvider fontSizeProvider,
+    required double baseFontSize,
+  }
+      ) {
     return Card(
       color: Colors.white,
       elevation: 4.0,
@@ -150,12 +171,15 @@ class _AnalysisPageState extends State<AnalysisPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 36, color: Color(0xff009e73)), // 조정된 아이콘 크기
+                Icon(icon, color: Color(0xff009e73)),
                 SizedBox(width: 8),
                 Flexible(
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // 조정된 텍스트 크기
+                    style: TextStyle(
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize + 1.0),
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -164,7 +188,10 @@ class _AnalysisPageState extends State<AnalysisPage> {
             SizedBox(height: 12),
             Text(
               value,
-              style: TextStyle(fontSize: 24, color: Color(0xff009e73)), // 조정된 값 텍스트 크기
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize + 6.0),
+                color: Color(0xff009e73),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -173,7 +200,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildSummaryItem(String amount, String title) {
+  Widget _buildSummaryItem(
+      String amount,
+      String title,
+      FontSizeProvider fontSizeProvider,
+      double baseFontSize,
+      ) {
     return Card(
       color: Colors.white,
       elevation: 4.0,
@@ -184,17 +216,23 @@ class _AnalysisPageState extends State<AnalysisPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
-              radius: 35, // 조정된 원 크기
+              radius: 35.0,
               backgroundColor: Color(0xff009e73),
               child: Text(
                 amount,
-                style: TextStyle(color: Colors.white, fontSize: 20), // 조정된 텍스트 크기
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: fontSizeProvider.getFontSize(18.0),
+                ),
               ),
             ),
             SizedBox(height: 10),
             Text(
               title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // 조정된 텍스트 크기
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(14.0),
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -203,7 +241,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
     );
   }
 
-  Widget _buildAttendance(BuildContext context) {
+  Widget _buildAttendance(BuildContext context, FontSizeProvider fontSizeProvider, double baseFontSize) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
@@ -230,9 +268,17 @@ class _AnalysisPageState extends State<AnalysisPage> {
                 children: [
                   Text(
                     'Attendance',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // 조정된 텍스트 크기
+                    style: TextStyle(
+                      fontSize: fontSizeProvider.getFontSize(18.0),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Text('Selected'),
+                  Text(
+                    'Selected',
+                    style: TextStyle(
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    ),
+                  ),
                 ],
               ),
               ElevatedButton(
@@ -242,44 +288,63 @@ class _AnalysisPageState extends State<AnalysisPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xff009e73),
                 ),
-                child: Text('Calendar'),
+                child: Text(
+                  'Calendar',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
               ),
             ],
           ),
-          if (_selectedDate != null) _buildSelectedDate(),
+          if (_selectedDate != null) _buildSelectedDate(fontSizeProvider, baseFontSize),
         ],
       ),
     );
   }
 
-  Widget _buildSelectedDate() {
-    return _buildAttendanceItem(DateFormat('MMMM').format(_selectedDate!), 'Recycled 0 pounds');
+  Widget _buildSelectedDate(FontSizeProvider fontSizeProvider, double baseFontSize) {
+    return _buildAttendanceItem(DateFormat('MMMM').format(_selectedDate!), 'Recycled 0 pounds', fontSizeProvider, baseFontSize);
   }
 
-  Widget _buildAttendanceItem(String month, String status) {
+  Widget _buildAttendanceItem(
+      String month,
+      String status,
+      FontSizeProvider fontSizeProvider,
+      double baseFontSize,
+      ) {
     return ListTile(
-      leading: Icon(Icons.circle, color: Color(0xff009e73), size: 28), // 조정된 아이콘 크기
+      leading: Icon(
+        Icons.circle,
+        color: Color(0xff009e73),
+        size: 28.0,
+      ),
       title: Text(
         month,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // 조정된 텍스트 크기
+        style: TextStyle(
+          fontSize: fontSizeProvider.getFontSize(baseFontSize),
+        ),
       ),
-      trailing: Text(
+      subtitle: Text(
         status,
-        style: TextStyle(fontSize: 16), // 조정된 텍스트 크기
+        style: TextStyle(
+          fontSize: fontSizeProvider.getFontSize(baseFontSize - 2.0),
+        ),
       ),
     );
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? selected = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2020),
-      lastDate: DateTime(2199),
+      lastDate: DateTime(2101),
     );
-    if (selected != null && selected != _selectedDate) {
+
+    if (picked != null && picked != _selectedDate) {
       setState(() {
-        _selectedDate = selected;
+        _selectedDate = picked;
       });
     }
   }

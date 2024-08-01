@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/settings/font_size_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import '/settings/edit.dart';
+
+import './edit.dart';
 import './reward_history.dart';
 import './setting_options.dart';
+import '/settings/font_size_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

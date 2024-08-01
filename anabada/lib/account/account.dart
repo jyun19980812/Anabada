@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../settings/edit.dart';
 import '../settings/image_provider.dart';
+import '../settings/font_size_provider.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -12,10 +13,15 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingOptions = Provider.of<SettingOptions>(context, listen: false); // image처럼 provider로 사용
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 20.0;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account'),
+        title: Text(
+          'Account',
+          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 5.0)),
+        ),
         backgroundColor: const Color(0xFF009E73),
       ),
       body: FutureBuilder<DocumentSnapshot>(
@@ -54,11 +60,16 @@ class AccountScreen extends StatelessWidget {
                           RichText(
                             text: TextSpan(
                               text: username,
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                              ),
                               children: <TextSpan>[
                                 TextSpan(
                                   text: ' ($fullname)',
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: fontSizeProvider.getFontSize(baseFontSize * 0.75),
+                                  ),
                                 ),
                               ],
                             ),
@@ -67,48 +78,7 @@ class AccountScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              FloatingActionButton.extended(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Friend request sent!"),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                heroTag: 'friend_request',
-                                elevation: 0,
-                                backgroundColor: Color(0xFF009e73),
-                                label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
-                                icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
-                              ),
                               const SizedBox(width: 16.0),
-                              FloatingActionButton.extended(
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text("Send a Message"),
-                                      content: TextField(
-                                        decoration: InputDecoration(hintText: "Enter your message here"),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          child: Text("Send"),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                heroTag: 'message',
-                                elevation: 0,
-                                backgroundColor: Color(0xFF0072b2),
-                                label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
-                                icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 16.0),
@@ -135,6 +105,9 @@ class _ProfileInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 16.0;
+
     return Container(
       height: 80,
       constraints: const BoxConstraints(maxWidth: 400),
@@ -149,26 +122,32 @@ class _ProfileInfoRow extends StatelessWidget {
     );
   }
 
-  Widget _singleItem(BuildContext context, String title, String value) => Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+  Widget _singleItem(BuildContext context, String title, String value) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 16.0;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: fontSizeProvider.getFontSize(20.0),
+            ),
           ),
         ),
-        
-      ),
-      Text(
-        title,
-        style: Theme.of(context).textTheme.bodySmall,
-      )
-    ],
-  );
+        Text(
+          title,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontSize: fontSizeProvider.getFontSize(baseFontSize),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _TopPortion extends StatefulWidget {
