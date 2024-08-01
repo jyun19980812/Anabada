@@ -121,7 +121,7 @@ class _QNAScreenState extends State<QNAScreen> {
                   fontSize: fontSizeProvider.getFontSize(baseFontSize + 0),),),
               children: <Widget>[
                 ListTile(
-                  title: Text('Points are awarded randomly between 1 and 30 points.' ,
+                  title: Text('Points are awarded randomly between 1 and 20 points.' ,
                     style: TextStyle(
                       fontSize: fontSizeProvider.getFontSize(baseFontSize + 0),),),
                 ),
