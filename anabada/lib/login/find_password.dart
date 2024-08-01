@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../settings/font_size_provider.dart';
 import 'login.dart';
-import 'find_id.dart';
+import 'find_email.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
   _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
@@ -15,66 +16,42 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  final TextEditingController idController = TextEditingController();
   bool isPasswordSent = false;
   String message = '';
 
-  Future<void> _sendEmail(String email, String password) async {
-    String username = 'your-email@gmail.com';
-    String password = 'your-password';
-
-    final smtpServer = gmail(username, password);
-    final message = Message()
-      ..from = Address(username, 'Your App Name')
-      ..recipients.add(email)
-      ..subject = 'Your Password'
-      ..text = 'Your password is: $password';
-
-    try {
-      final sendReport = await send(message, smtpServer);
-      print('Message sent: ' + sendReport.toString());
-    } on MailerException catch (e) {
-      print('Message not sent. \n' + e.toString());
-      for (var p in e.problems) {
-        print('Problem: ${p.code}: ${p.msg}');
-      }
-      throw Exception('Failed to send email');
-    }
-  }
-
   Future<void> _onResetPassword() async {
     if (emailController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty &&
-        idController.text.isNotEmpty) {
+        fullNameController.text.isNotEmpty &&
+        phoneController.text.isNotEmpty) {
       try {
         // Firestore에서 사용자 정보 조회
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('users')
             .where('email', isEqualTo: emailController.text)
+            .where('fullname', isEqualTo: fullNameController.text)
             .where('phone', isEqualTo: phoneController.text)
-            .where('id', isEqualTo: idController.text)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
-          var password = userDoc['password'];
 
-          // 이메일 전송
-          await _sendEmail(emailController.text, password);
+          // Firebase Auth를 통해 비밀번호 재설정 이메일 전송
+          await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text);
 
           setState(() {
             isPasswordSent = true;
-            message = 'Your password has been sent to your email!';
+            message = 'A password reset link has been sent to your email!';
           });
         } else {
           setState(() {
-            message = 'No user found with provided email, phone number, and ID.';
+            message = 'No user found with provided email, full name, and phone number.';
           });
         }
       } catch (e) {
         setState(() {
-          message = 'Failed to reset password. Please try again.';
+          message = 'Failed to send password reset email. Please try again.';
         });
       }
     }
@@ -82,6 +59,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
@@ -90,10 +70,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const AutoSizeText(
+              AutoSizeText(
                 'Find Password',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 12.0),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -106,6 +86,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Email',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: fullNameController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Full Name',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -119,19 +118,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Phone',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: idController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'ID',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -149,13 +138,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const AutoSizeText('Find PW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18), maxLines: 1,),
+                child: AutoSizeText(
+                  'Find PW',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: fontSizeProvider.getFontSize(18),
+                  ),
+                  maxLines: 1,
+                ),
               ),
               const SizedBox(height: 16),
               if (isPasswordSent || message.isNotEmpty)
                 AutoSizeText(
                   message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSizeProvider.getFontSize(13),
+                  ),
                   maxLines: 2,
                 ),
               const SizedBox(height: 16),
@@ -169,9 +168,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         MaterialPageRoute(builder: (context) => const FindIdScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot ID?',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                      ),
                     ),
                   ),
                   TextButton(
@@ -181,10 +183,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Sign In!',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -1,171 +1,166 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:provider/provider.dart';
+import '../settings/setting_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../settings/edit.dart';
+import '../settings/image_provider.dart';
+import '../settings/font_size_provider.dart';
 
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final settingOptions = Provider.of<SettingOptions>(context, listen: false); // image처럼 provider로 사용
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 20.0;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account'),
+        title: Text(
+          'Account',
+          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 5.0)),
+        ),
         backgroundColor: const Color(0xFF009E73),
       ),
-      body: Column(
-        children: [
-          const Expanded(flex: 2, child: _TopPortion()),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
+      body: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("User data not found"));
+          }
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+          var username = userData['username'] ?? 'No Name';
+          var fullname = userData['fullname'] ?? '';
+          var totalPoints = userData['total_points'] ?? 0;
+          var totalRecycled = (userData['total_recycled'] ?? 0).toDouble();
+
+          return FutureBuilder<bool>(
+            future: settingOptions.isKgEnabled(),
+            builder: (context, kgSnapshot) {
+              if (kgSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              bool isGramEnabled = kgSnapshot.data ?? false;
+              double recycledValue = isGramEnabled ? totalRecycled * 453.592 : totalRecycled;
+
+              return Column(
                 children: [
-                  Text(
-                    "John Dow",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FloatingActionButton.extended(
-                        onPressed: () {ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Friend request sent!"),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );},
-                        heroTag: 'friend_request',
-                        elevation: 0,
-                        backgroundColor: Color(0xFF009e73),
-                        label: const Text("Friend Request", style: TextStyle(color: Color(0xFFffffff))),
-                        icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFffffff)),
-                      ),
-                      const SizedBox(width: 16.0),
-                      FloatingActionButton.extended(
-                        onPressed: () {showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text("Send a Message"),
-                            content: TextField(
-                              decoration: InputDecoration(hintText: "Enter your message here"),
-                            ),
-                            actions: [
-                              TextButton(
-                                child: Text("Send"),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
+                  const Expanded(flex: 2, child: _TopPortion()),
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: username,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSizeProvider.getFontSize(baseFontSize),
                               ),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: ' ($fullname)',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: fontSizeProvider.getFontSize(baseFontSize * 0.75),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(width: 16.0),
                             ],
                           ),
-                        );},
-                        heroTag: 'message',
-                        elevation: 0,
-                        backgroundColor: Color(0xFF0072b2),
-                        label: const Text("Message", style: TextStyle(color: Color(0xFFffffff)),),
-                        icon: const Icon(Icons.message_rounded, color: Color(0xFFffffff),),
+                          const SizedBox(height: 16.0),
+                          _ProfileInfoRow(totalPoints: totalPoints.toString(), totalRecycled: recycledValue.toString())
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  const _ProfileInfoRow()
                 ],
-              ),
-            ),
-          ),
-        ],
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
 
 class _ProfileInfoRow extends StatelessWidget {
-  const _ProfileInfoRow({Key? key}) : super(key: key);
+  final String totalPoints;
+  final String totalRecycled;
 
-  final List<ProfileInfoItem> _items = const [
-    ProfileInfoItem("Friends", 200),
-    ProfileInfoItem("Recycled (lbs)", 50),
-  ];
+  const _ProfileInfoRow({Key? key, required this.totalPoints, required this.totalRecycled}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 16.0;
+
     return Container(
       height: 80,
       constraints: const BoxConstraints(maxWidth: 400),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: _items
-            .map((item) => Expanded(
-            child: Row(
-              children: [
-                if (_items.indexOf(item) != 0) const VerticalDivider(),
-                Expanded(child: _singleItem(context, item)),
-              ],
-            )))
-            .toList(),
+        children: [
+          _singleItem(context, 'Points', totalPoints),
+          const VerticalDivider(),
+          _singleItem(context, 'Recycled', totalRecycled),
+        ],
       ),
     );
   }
 
-  Widget _singleItem(BuildContext context, ProfileInfoItem item) => Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          item.value.toString(),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+  Widget _singleItem(BuildContext context, String title, String value) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context, listen: false);
+    const double baseFontSize = 16.0;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: fontSizeProvider.getFontSize(20.0),
+            ),
           ),
         ),
-      ),
-      Text(
-        item.title,
-        style: Theme.of(context).textTheme.bodySmall,
-      )
-    ],
-  );
-}
-
-class ProfileInfoItem {
-  final String title;
-  final int value;
-  const ProfileInfoItem(this.title, this.value);
+        Text(
+          title,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontSize: fontSizeProvider.getFontSize(baseFontSize),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _TopPortion extends StatefulWidget {
-  const _TopPortion({Key? key}) : super(key: key);
+  const _TopPortion();
 
   @override
   State<_TopPortion> createState() => _TopPortionState();
 }
 
 class _TopPortionState extends State<_TopPortion> {
-  ImageProvider<Object>? _image = const AssetImage('assets/default.jpg'); // Default image path
-
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        print("Selected image path: ${image.path}");  // 로그에 경로 출력
-        setState(() {
-          _image = FileImage(File(image.path));  // 이미지 업데이트
-        });
-      }
-    } catch (e) {
-      print("Image pick error: $e");  // 에러 로깅
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final profileImageProvider = Provider.of<ProfileImageProvider>(context);
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -184,7 +179,12 @@ class _TopPortionState extends State<_TopPortion> {
         Align(
           alignment: Alignment.bottomCenter,
           child: GestureDetector(
-            onTap: _pickImage,  // Add tap functionality
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditProfileScreen()),
+              );
+            },
             child: SizedBox(
               width: 150,
               height: 150,
@@ -194,10 +194,14 @@ class _TopPortionState extends State<_TopPortion> {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: _image!,  // Use user-selected image
+                    image: profileImageProvider.imageUrl != null
+                        ? NetworkImage(profileImageProvider.imageUrl!)
+                        : const AssetImage('assets/default.jpg'),
                   ),
                 ),
-                child: const Icon(Icons.person, size: 100, color: Colors.white), // Default icon
+                child: profileImageProvider.imageUrl == null
+                    ? Icon(Icons.person, size: 100, color: Colors.white)
+                    : null,
               ),
             ),
           ),

@@ -1,342 +1,487 @@
-import 'dart:io'; // 파일 관련 기능 사용을 위해 필요
-import 'package:anabada/main.dart'; // 메인 앱 파일을 가져오기 위해 필요
-import 'package:flutter/foundation.dart'; // kIsWeb을 사용하기 위해 필요
-import 'package:flutter/material.dart'; // Flutter의 기본 위젯 및 테마 가져오기
-import 'package:flutter/widgets.dart'; // Flutter의 기본 위젯 가져오기
-import 'package:image_picker/image_picker.dart'; // 이미지 선택 기능을 사용하기 위해 필요
-import 'dart:math'; // 난수 생성기를 사용하기 위해 필요
+import 'dart:io';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'main.dart';
+import 'package:provider/provider.dart';
+import './settings/font_size_provider.dart';
 
-Random random = Random(); // 난수 생성기 인스턴스 생성
+Random random = Random();
 
-class RecycleScreen extends StatefulWidget { // 상태를 가지는 위젯 생성
-  final Function(int) onTabTapped; // 탭 변경을 위한 콜백 함수
-  const RecycleScreen({super.key, required this.onTabTapped}); // 생성자
+class RecycleScreen extends StatefulWidget {
+  final Function(int) onTabTapped;
+  const RecycleScreen({super.key, required this.onTabTapped});
+
   @override
-  State<RecycleScreen> createState() => _RecycleScreenState(); // 상태 클래스 생성
+  State<RecycleScreen> createState() => _RecycleScreenState();
 }
 
-class _RecycleScreenState extends State<RecycleScreen> { // 상태 클래스 정의
-  final ImagePicker picker = ImagePicker(); // 이미지 선택기 인스턴스 생성
-  XFile? _imageFile; // 선택된 이미지 파일을 저장할 변수
+class _RecycleScreenState extends State<RecycleScreen> {
+  final ImagePicker picker = ImagePicker();
+  XFile? _imageFile;
 
-  Future<void> getImage(ImageSource imageSource, String buttonId) async { // 이미지 선택 함수
+  Future<void> getImage(ImageSource imageSource, String buttonId) async {
     try {
-      final XFile? imageFile = await picker.pickImage( // 이미지 선택
-          source: imageSource, maxHeight: 300, maxWidth: 300); // 이미지 크기 제한
-      if (imageFile != null) { // 이미지가 선택되었으면
-        setState(() { // 상태 업데이트
-          _imageFile = imageFile; // 이미지 파일 저장
+      final XFile? imageFile = await picker.pickImage(
+          source: imageSource, maxHeight: 300, maxWidth: 300);
+      if (imageFile != null) {
+        setState(() {
+          _imageFile = imageFile;
         });
-        // 이미지를 선택한 후 조건에 따라 다른 화면으로 이동
         if (buttonId == "certify") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => RecyclingScreen1(imageFile, widget.onTabTapped)), // RecyclingScreen1으로 이동
+            MaterialPageRoute(
+                builder: (context) =>
+                    RecyclingScreen1(imageFile, widget.onTabTapped)),
           );
         } else if (buttonId == "check") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CheckRecyclingScreen(imageFile, widget.onTabTapped)), // CheckRecyclingScreen으로 이동
+            MaterialPageRoute(
+                builder: (context) =>
+                    CheckRecyclingScreen(imageFile, widget.onTabTapped)),
           );
         }
       }
     } catch (e) {
-      print("디버깅용 이미지 호출 에러 : $e"); // 오류 발생 시 출력
+      print("Error picking image: $e");
     }
   }
 
   @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    return Scaffold( // Scaffold 위젯 사용
-      appBar: AppBar(), // 상단 앱바
-      body: Row( // 가로 방향 레이아웃
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 아이템 간격을 균등하게 설정
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: orientation == Orientation.portrait
+                ? _buildPortraitLayout()
+                : _buildLandscapeLayout(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPortraitLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Let's Recycle!",
+          style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF009E73)),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
+        Text(
+          "Check whether you can recycle your trash!",
+          style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF009E73)),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: _buildButton("Can I Recycle?", "Take Picture and Ask Gemini whether you can recycle your trash!", Icons.question_mark, "check"),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _buildButton("Ready to Earn Points?", "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!", Icons.attach_money, "certify"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout() {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return SingleChildScrollView(
+      child: Column(
         children: [
-          Expanded( // 자식 위젯을 화면의 절반 차지하게 설정
-            child: Container( // 컨테이너 위젯
-              margin: EdgeInsets.only(right: 10), // 오른쪽 간격 추가
-              child: Center( // 가운데 정렬
-                child: ElevatedButton( // 버튼 위젯
-                  onPressed: () {
-                    getImage(ImageSource.camera, "certify"); // 카메라를 이용해 이미지 선택
-                  },
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, double.infinity), // 버튼이 화면의 반을 차지하도록 설정
-                      backgroundColor: const Color(0xFF009E73), // 버튼 배경색
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)) // 둥근 모서리 설정
-                      )
-                  ),
-                  child: Column( // 세로 방향 레이아웃
-                    mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-                    children: [
-                      Icon(Icons.recycling, color: Colors.white, size: 200), // 아이콘 추가
-                      SizedBox(height: 20), // 간격 추가
-                      const Text("Certifying Recyclable Waste", // 텍스트 추가
-                          style: TextStyle(
-                              color: Colors.white, // 텍스트 색상
-                              fontSize: 24
-                          )
-                      ),
-                      Text('')
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          Text(
+            "Let's Recycle!",
+            style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF009E73)),
+            textAlign: TextAlign.center,
           ),
-          Expanded( // 자식 위젯을 화면의 절반 차지하게 설정
-            child: Container( // 컨테이너 위젯
-              margin: EdgeInsets.only(left: 10), // 왼쪽 간격 추가
-              child: Center( // 가운데 정렬
-                child: ElevatedButton( // 버튼 위젯
-                  onPressed: () {
-                    getImage(ImageSource.camera, "check"); // 카메라를 이용해 이미지 선택
-                  },
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, double.infinity), // 버튼이 화면의 반을 차지하도록 설정
-                      backgroundColor: const Color(0xFF009E73), // 버튼 배경색
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)) // 둥근 모서리 설정
-                      )
-                  ),
-                  child: Column( // 세로 방향 레이아웃
-                    mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-                    children: [
-                      Icon(Icons.check, color: Colors.white, size: 200), // 아이콘 추가
-                      SizedBox(height: 20), // 간격 추가
-                      const Text("Check Recyclable Waste", // 텍스트 추가
-                          style: TextStyle(
-                              color: Colors.white, // 텍스트 색상
-                              fontSize: 24
-                          )
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          const SizedBox(height: 20),
+          Text(
+            "Check whether you can recycle your trash!",
+            style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF009E73)),
+            textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 20),
+          _buildButton("Can I Recycle?", "Take Picture and Ask Gemini whether you can recycle your trash!", Icons.question_mark, "check"),
+          const SizedBox(height: 16),
+          _buildButton("Ready to Earn Points?", "Earn the points by taking picture of recycling bin and your recycle trash to receive the points!", Icons.attach_money, "certify"),
         ],
       ),
     );
   }
 
-  Widget _buildPhotoArea() { // 사진 영역 빌드 함수
-    if (_imageFile != null) { // 이미지 파일이 있으면
-      return Center(
-        child: kIsWeb
-            ? Image.network(_imageFile!.path) // 웹에서는 Image.network 사용
-            : Image.file(File(_imageFile!.path)), // 모바일에서는 Image.file 사용
-      );
-    } else {
-      return const Center(
-        child: Text(
-          "Certifing Recyclable waste", // 텍스트 추가
-          style: TextStyle(color: Colors.black,
-              backgroundColor: Colors.white,
-              fontSize: 16),
+  Widget _buildButton(String title, String subtitle, IconData icon, String buttonId) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return ElevatedButton(
+      onPressed: () {
+        getImage(ImageSource.gallery, buttonId);
+      },
+      style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF009E73),
+          foregroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(50),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10))),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 100, color: Colors.white),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize),),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            subtitle,
+            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CheckRecyclingScreen extends StatefulWidget {
+  final XFile imageFile;
+  final Function(int) onTabTapped;
+
+  CheckRecyclingScreen(this.imageFile, this.onTabTapped);
+
+  @override
+  _CheckRecyclingScreenState createState() => _CheckRecyclingScreenState();
+}
+
+class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
+  String result = "Checking...";
+  late GenerativeModel model;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeModel();
+    checkRecyclability();
+  }
+
+  void initializeModel() {
+    final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
+    model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+  }
+
+  Future<void> checkRecyclability() async {
+    try {
+      final imageBytes = await widget.imageFile.readAsBytes();
+      final prompt = TextPart("What is this item, and is this item recyclable?");
+      final imagePart = DataPart('image/jpg', imageBytes);
+
+      final response = await model.generateContent([
+        Content.multi([prompt, imagePart])
+      ]);
+
+      setState(() {
+        result = response.text ?? "Error checking recyclability.";
+      });
+    } catch (e) {
+      setState(() {
+        result = "Error checking recyclability: $e";
+      });
+    }
+
+    Future.delayed(Duration(seconds: 5), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResponsiveNavBarPage(),
         ),
       );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Checking...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0)),),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.green),
+            SizedBox(height: 20),
+            Text(result,
+                style: TextStyle(
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF009E73))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RecyclingScreen1 extends StatefulWidget {
+  final XFile imageFile;
+  final Function(int) onTabTapped;
+
+  RecyclingScreen1(this.imageFile, this.onTabTapped);
+
+  @override
+  _RecyclingScreen1State createState() => _RecyclingScreen1State();
+}
+
+class _RecyclingScreen1State extends State<RecyclingScreen1> {
+  String result = "Recycling...";
+  double? trashWeight; // Variable to store the estimated weight
+
+  @override
+  void initState() {
+    super.initState();
+    checkDailyPoints();
+  }
+
+  Future<void> checkDailyPoints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final userDoc =
+      await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+      Timestamp? lastUpdated = userDoc.data()?['last_updated'];
+
+      final now = Timestamp.now();
+      final today = DateTime(now.toDate().year, now.toDate().month, now.toDate().day);
+      final lastUpdatedDay = lastUpdated != null
+          ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+          lastUpdated.toDate().day)
+          : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+      if (today.isAfter(lastUpdatedDay)) {
+        dailyPoints = 0;
+      }
+
+      if (dailyPoints >= 100) {
+        setState(() {
+          result = "Daily points limit reached. Try again tomorrow.";
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      } else {
+        checkRecyclability();
+      }
+    } else {
+      print("No user is currently logged in.");
     }
   }
-}
 
-class CheckRecyclingScreen extends StatelessWidget { // CheckRecyclingScreen 클래스 정의
-  final XFile imageFile; // 이미지 파일 변수
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  CheckRecyclingScreen(this.imageFile, this.onTabTapped); // 생성자
-  @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    // 5초 후에 RecycleScreen으로 이동
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ResponsiveNavBarPage()), // ResponsiveNavBarPage로 이동
-      );
-    });
-    return Scaffold( // Scaffold 위젯 사용
-      extendBodyBehindAppBar: true, // 앱바 뒤로 바디 확장
-      appBar: AppBar( // 상단 앱바
-        backgroundColor: Colors.white, // 배경색 설정
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black,), // 뒤로가기 아이콘
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기
-          },
-        ),
-      ),
-      body: Center( // 가운데 정렬
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-          children: const [
-            CircularProgressIndicator(color: Color(0xFF009E73)), // 리사이클링 표시 (회전 애니메이션)
-            SizedBox(height: 30), // 위 아래 간격 조정하기
-            Text('Checking Recyclable Waste...') // 텍스트 추가
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class RecyclingScreen1 extends StatelessWidget { // RecyclingScreen1 클래스 정의
-  final XFile imageFile; // 이미지 파일 변수
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  RecyclingScreen1(this.imageFile, this.onTabTapped); // 생성자
-  @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    // 5초 후에 getPointScreen으로 이동
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => TakingOutScreen(onTabTapped)), // TakingOutScreen으로 이동
-      );
-    });
-    return Scaffold( // Scaffold 위젯 사용
-      extendBodyBehindAppBar: true, // 앱바 뒤로 바디 확장
-      appBar: AppBar( // 상단 앱바
-        backgroundColor: Colors.white, // 배경색 설정
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 아이콘
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기
-          },
-        ),
-      ),
-      body: Center( // 가운데 정렬
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-          children: const [
-            CircularProgressIndicator(color: Color(0xFF009E73)), // 리사이클링 표시 (회전 애니메이션)
-            SizedBox(height: 30), // 위 아래 간격 조정하기
-            Text('Now Recycling...') // 텍스트 추가
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class TakingOutScreen extends StatefulWidget { // TakingOutScreen 클래스 정의
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  const TakingOutScreen(this.onTabTapped, {super.key}); // 생성자
-  @override
-  State<TakingOutScreen> createState() => _TakingOutScreenState(); // 상태 클래스 생성
-}
-
-class _TakingOutScreenState extends State<TakingOutScreen> { // 상태 클래스 정의
-  final ImagePicker picker = ImagePicker(); // 이미지 선택기 인스턴스 생성
-  XFile? _imageFile; // 선택된 이미지 파일을 저장할 변수
-
-  Future<void> getImage(ImageSource imageSource) async { // 이미지 선택 함수
+  Future<void> checkRecyclability() async {
     try {
-      final XFile? imageFile = await picker.pickImage( // 이미지 선택
-          source: imageSource, maxHeight: 300, maxWidth: 300); // 이미지 크기 제한
-      if (imageFile != null) { // 이미지가 선택되었으면
-        setState(() { // 상태 업데이트
-          _imageFile = imageFile; // 이미지 파일 저장
+      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
+      final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+
+      final imageBytes = await widget.imageFile.readAsBytes();
+      final prompt1 = TextPart("Is this item recyclable?");
+      final prompt2 = TextPart(
+          "Estimate the weight of the trash in lbs and respond with the number only.");
+      final imagePart = DataPart('image/jpeg', imageBytes);
+
+      final response1 = await model.generateContent([
+        Content.multi([prompt1, imagePart])
+      ]);
+
+      final apiResult1 = response1.text ?? "Error verifying recyclability.";
+      if (apiResult1.contains("yes") || apiResult1.contains("Yes")) {
+        final response2 = await model.generateContent([
+          Content.multi([prompt2, imagePart])
+        ]);
+        final apiResult2 = response2.text ?? "Error estimating weight.";
+        trashWeight = double.tryParse(apiResult2); // Save the estimated weight
+        if (trashWeight != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TakingOutScreen(widget.onTabTapped, trashWeight!),
+            ),
+          );
+        } else {
+          setState(() {
+            result = "Error estimating weight. Please try again.";
+          });
+          Future.delayed(Duration(seconds: 5), () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResponsiveNavBarPage(),
+              ),
+            );
+          });
+        }
+      } else {
+        setState(() {
+          result = "This item is not recyclable.";
         });
-        // 이미지를 선택한 후 다음 화면으로 이동
-        Navigator.push( // 화면 전환
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      setState(() {
+        result = "Error verifying recyclability: $e";
+      });
+      Future.delayed(Duration(seconds: 10), () {
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => RecyclingScreen2(imageFile, widget.onTabTapped)), // RecyclingScreen2로 이동
+          MaterialPageRoute(
+            builder: (context) => ResponsiveNavBarPage(),
+          ),
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.green),
+            SizedBox(height: 20),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TakingOutScreen extends StatefulWidget {
+  final Function(int) onTabTapped;
+  final double trashWeight;
+
+  const TakingOutScreen(this.onTabTapped, this.trashWeight, {super.key});
+
+  @override
+  State<TakingOutScreen> createState() => _TakingOutScreenState();
+}
+
+class _TakingOutScreenState extends State<TakingOutScreen> {
+  final ImagePicker picker = ImagePicker();
+  XFile? _imageFile;
+
+  Future<void> getImage(ImageSource imageSource) async {
+    try {
+      final XFile? imageFile = await picker.pickImage(
+          source: imageSource, maxHeight: 300, maxWidth: 300);
+      if (imageFile != null) {
+        setState(() {
+          _imageFile = imageFile;
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  RecyclingScreen2(imageFile, widget.onTabTapped, widget.trashWeight)),
         );
       }
     } catch (e) {
-      print("디버깅용 이미지 호출 에러 : $e"); // 오류 발생 시 출력
+      print("Error picking image: $e");
     }
   }
 
   @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    return SafeArea( // 안전 영역 확보
-      child: Container( // 컨테이너 위젯
-        color: Colors.white, // 배경색 설정
-        child: Center( // 가운데 정렬
-          child: Column( // 세로 방향 레이아웃
-            mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-            children: [
-              SizedBox(
-                width: 300,
-                height: 300,
-                child: _buildPhotoArea2(), // 사진 영역 빌드 함수 호출
-              ),
-              Row( // 가로 방향 레이아웃
-                mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      getImage(ImageSource.camera); // 카메라를 이용해 이미지 선택
-                    },
-                    child: const Icon(Icons.camera, color: Color(0xFF009E73)), // 아이콘 추가
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    getImage(ImageSource.gallery);
   }
 
-  Widget _buildPhotoArea2() { // 사진 영역 빌드 함수
-    if (_imageFile != null) { // 이미지 파일이 있으면
-      return Center(
-        child: kIsWeb
-            ? Image.network(_imageFile!.path) // 웹에서는 Image.network 사용
-            : Image.file(File(_imageFile!.path)), // 모바일에서는 Image.file 사용
-      );
-    } else {
-      return const Center(
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
+  @override
+  Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Taking Out Trash', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize+ 4.0)),),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Please take a photo you taking out trash", // 텍스트 추가
-                style: TextStyle(
-                  color: Colors.black, // 텍스트 색상
-                  backgroundColor: Colors.white, // 배경색
-                  fontSize: 16, // 글자 크기
-                )
+            SizedBox(
+              width: 300,
+              height: 300,
+              child: _imageFile != null
+                  ? Image.file(File(_imageFile!.path))
+                  : Text("Please take a photo of you taking out trash",
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
-          ],
-        ),
-      );
-    }
-  }
-}
-
-class RecyclingScreen2 extends StatelessWidget { // RecyclingScreen2 클래스 정의
-  final XFile imageFile; // 이미지 파일 변수
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  RecyclingScreen2(this.imageFile, this.onTabTapped); // 생성자
-
-  @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    // recyclePoint 만들기
-    int recyclePoint = random.nextInt(101); // 난수 생성 (0부터 100 사이)
-
-    // 10초 후에 getPointScreen으로 이동
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => getPointScreen(recyclePoint, onTabTapped)), // getPointScreen으로 이동
-      );
-    });
-
-    return Scaffold( // Scaffold 위젯 사용
-      extendBodyBehindAppBar: true, // 앱바 뒤로 바디 확장
-      appBar: AppBar(
-          backgroundColor: Colors.white // 배경색 설정
-      ),
-      body: Center( // 가운데 정렬
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-          children: const [
-            CircularProgressIndicator(color: Color(0xFF009E73)), // 리사이클링 표시 (회전 애니메이션)
-            SizedBox(height: 30), // 위 아래 간격 조정하기
-            Text('Now Recycling...') // 텍스트 추가
+            SizedBox(height: 20),
+            _imageFile == null
+                ? ElevatedButton(
+              onPressed: () {
+                getImage(ImageSource.camera);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: Icon(Icons.camera, color: Colors.white),
+            )
+                : Container(),
           ],
         ),
       ),
@@ -344,68 +489,249 @@ class RecyclingScreen2 extends StatelessWidget { // RecyclingScreen2 클래스 �
   }
 }
 
-class getPointScreen extends StatelessWidget { // getPointScreen 클래스 정의
-  final int recyclePoint; // 리사이클 포인트 변수
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  const getPointScreen(this.recyclePoint, this.onTabTapped, {super.key}); // 생성자
+class RecyclingScreen2 extends StatefulWidget {
+  final XFile imageFile;
+  final Function(int) onTabTapped;
+  final double trashWeight;
+
+  RecyclingScreen2(this.imageFile, this.onTabTapped, this.trashWeight);
 
   @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-    return Scaffold( // Scaffold 위젯 사용
+  _RecyclingScreen2State createState() => _RecyclingScreen2State();
+}
+
+class _RecyclingScreen2State extends State<RecyclingScreen2> {
+  String result = "Now Recycling...";
+  int recyclePoint = random.nextInt(20) + 1; // 1~20 사이의 랜덤 포인트
+
+  @override
+  void initState() {
+    super.initState();
+    checkDailyPoints();
+  }
+
+  Future<void> checkDailyPoints() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+      Timestamp? lastUpdated = userDoc.data()?['last_updated'];
+
+      final now = Timestamp.now();
+      final today = DateTime(now.toDate().year, now.toDate().month, now.toDate().day);
+      final lastUpdatedDay = lastUpdated != null
+          ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+          lastUpdated.toDate().day)
+          : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+      if (today.isAfter(lastUpdatedDay)) {
+        dailyPoints = 0;
+      }
+
+      if (dailyPoints >= 100) {
+        setState(() {
+          result = "Daily points limit reached. Try again tomorrow.";
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      } else {
+        verifyRecyclingBin();
+      }
+    } else {
+      print("No user is currently logged in.");
+    }
+  }
+
+
+  Future<void> verifyRecyclingBin() async {
+    try {
+      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
+      final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+
+      final imageBytes = await widget.imageFile.readAsBytes();
+      final prompt = TextPart("Is this a recycling trash bin?");
+      final imagePart = DataPart('image/jpeg', imageBytes);
+
+      final response = await model.generateContent([
+        Content.multi([prompt, imagePart])
+      ]);
+
+      final apiResult = response.text ?? "Error verifying recycling bin.";
+      if (apiResult.contains("yes") || apiResult.contains("Yes")) {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final userId = user.uid;
+
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+          int newTotalPoints = userDoc['total_points'] + recyclePoint;
+          double newTotalRecycled = userDoc['total_recycled'] + await widget.trashWeight;
+          int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
+          Timestamp? lastUpdated =
+          userDoc.data()?['last_updated'];
+
+          final now = Timestamp.now();
+          final today = DateTime(
+              now.toDate().year, now.toDate().month, now.toDate().day);
+          final lastUpdatedDay = lastUpdated != null
+              ? DateTime(lastUpdated.toDate().year, lastUpdated.toDate().month,
+              lastUpdated.toDate().day)
+              : today.subtract(Duration(days: 1)); // If lastUpdated is null, set to previous day
+
+          if (today.isAfter(lastUpdatedDay)) {
+            dailyPoints = 0;
+          }
+
+          if (dailyPoints + recyclePoint <= 100) {
+            dailyPoints += recyclePoint;
+
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .update({
+              'total_points': newTotalPoints,
+              'last_updated': now,
+              'total_recycled': newTotalRecycled,
+            });
+
+            await FirebaseFirestore.instance.collection('point_events').add({
+              'user_id': userId,
+              'point_timestamp': now,
+              'point_earned': true,
+              'point_amount': recyclePoint,
+            });
+
+            await FirebaseFirestore.instance
+                .collection('recycle_events')
+                .add({
+              'user_id': userId,
+              'recycle_timestamp': now,
+              'points_awarded': recyclePoint,
+              'amount_recycled': widget.trashWeight, // Store the weight
+            });
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      GetPointScreen(recyclePoint, widget.onTabTapped)),
+            );
+          } else {
+            setState(() {
+              result = "Daily points limit reached. Try again tomorrow.";
+            });
+            Future.delayed(Duration(seconds: 5), () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ResponsiveNavBarPage(),
+                ),
+              );
+            });
+          }
+        } else {
+          print("No user is currently logged in.");
+        }
+      } else {
+        setState(() {
+          result = "The image is not recognized as a recycling bin.";
+        });
+        Future.delayed(Duration(seconds: 5), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResponsiveNavBarPage(),
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      setState(() {
+        result = "Error verifying recycling bin: $e";
+      });
+      Future.delayed(Duration(seconds: 5), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResponsiveNavBarPage(),
+          ),
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.white // 배경색 설정
+        title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
-      body: Center( // 가운데 정렬
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wallet, color: Color(0xFF009E73), size: 200), // 아이콘 추가
-            const SizedBox(height: 30), // 간격 추가
-            Text("You've got $recyclePoint points!"), // 포인트 텍스트 추가
-            const SizedBox(height: 30), // 간격 추가
+            CircularProgressIndicator(color: Colors.green),
+            SizedBox(height: 20),
+            Text(result, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GetPointScreen extends StatelessWidget {
+  final int recyclePoint;
+  final Function(int) onTabTapped;
+
+  const GetPointScreen(this.recyclePoint, this.onTabTapped, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Points Earned!'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wallet, size: 100, color: Colors.green),
+            SizedBox(height: 20),
+            Text("You've got $recyclePoint points!",
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
+            SizedBox(height: 20),
             ElevatedButton(
-              child: Icon(Icons.check, color: Color(0xFF009E73)), // 아이콘 추가
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const ResponsiveNavBarPage()), // ResponsiveNavBarPage로 이동
+                  MaterialPageRoute(
+                      builder: (context) => ResponsiveNavBarPage()),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('Back to Home', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CheckRecyclableWasteScreen extends StatelessWidget { // RecyclingScreen2 클래스 정의
-  final XFile imageFile; // 이미지 파일 변수
-  final Function(int) onTabTapped; // 탭 변경 콜백 함수
-  CheckRecyclableWasteScreen(this.imageFile, this.onTabTapped); // 생성자
-
-  @override
-  Widget build(BuildContext context) { // 위젯 빌드 함수
-
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ResponsiveNavBarPage()), // getPointScreen으로 이동
-      );
-    });
-
-    return Scaffold( // Scaffold 위젯 사용
-      extendBodyBehindAppBar: true, // 앱바 뒤로 바디 확장
-      appBar: AppBar(
-          backgroundColor: Colors.white // 배경색 설정
-      ),
-      body: Center( // 가운데 정렬
-        child: Column( // 세로 방향 레이아웃
-          mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-          children: const [
-            CircularProgressIndicator(color: Color(0xFF009E73)), // 리사이클링 표시 (회전 애니메이션)
-            SizedBox(height: 30), // 위 아래 간격 조정하기
-            Text('Now Recycling...') // 텍스트 추가
           ],
         ),
       ),

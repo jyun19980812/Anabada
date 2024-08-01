@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location/location.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'login.dart';
 import '../main.dart';
+import '../settings/font_size_provider.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -13,32 +18,69 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController fullnameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  LocationData? _locationData;
+
+  String hashPassword(String password) {
+    var bytes = utf8.encode(password); // data being hashed
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Future<void> _getLocation() async {
+    Location location = Location();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+  }
+
 
   void _onSignUp() async {
     if (emailController.text.isNotEmpty &&
-        usernameController.text.isNotEmpty &&
+        fullnameController.text.isNotEmpty &&
         passwordController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty) {
+        phoneController.text.isNotEmpty &&
+        _locationData != null) {
       try {
         UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
 
-        // Firebase Firestore에 추가 정보를 저장합니다.
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set({
-          'username': usernameController.text,
-          'password': passwordController.text,
-          'phone': phoneController.text,
-          'email': emailController.text,
-        });
+        if (_locationData != null && _locationData!.latitude != null && _locationData!.longitude != null) {
+          await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+            'fullname': fullnameController.text,
+            'password': hashPassword(passwordController.text), // 해시된 비밀번호 저장
+            'phone': phoneController.text,
+            'email': emailController.text,
+            'total_recycled': 0,
+            'total_points': 0.0,
+            'location': GeoPoint(_locationData!.latitude!, _locationData!.longitude!), // 위치 정보 저장
+          });
+        } else {
+          print('Location data is null or missing latitude/longitude');
+        }
 
         // 회원가입이 성공하면 메인 화면으로 이동합니다.
         Navigator.pushReplacement(
@@ -61,27 +103,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred. Please try again.')),
         );
+        print('Error: $e'); // 에러 로그 추가
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('All fields are required.')),
+        SnackBar(content: Text('All fields are required and permissions must be granted.')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
     return Scaffold(
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              const SizedBox(height: 48),
+              Text(
                 'Register',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: fontSizeProvider.getFontSize(32),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -93,6 +139,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Email',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -101,11 +150,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: usernameController,
+                controller: fullnameController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Username',
+                  hintText: 'Full Name',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -120,6 +172,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Password',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -133,6 +188,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Phone',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -141,38 +199,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _onSignUp,
+                onPressed: () async {
+                  await _getLocation();
+                  _onSignUp();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF009E73),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text('Sign Up'),
+                child: Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Already Have an Account?',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Log In!',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

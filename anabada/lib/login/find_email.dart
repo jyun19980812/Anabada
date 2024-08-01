@@ -1,76 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:provider/provider.dart';
+import '../settings/font_size_provider.dart';
 import 'login.dart';
 import 'find_password.dart';
 
 class FindIdScreen extends StatefulWidget {
-  const FindIdScreen({Key? key}) : super(key: key);
+  const FindIdScreen({super.key});
 
   @override
   _FindIdScreenState createState() => _FindIdScreenState();
 }
 
 class _FindIdScreenState extends State<FindIdScreen> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  bool isIdSent = false;
+  bool isEmailFound = false;
   String message = '';
 
-  Future<void> _sendEmail(String email, String userId) async {
-    String username = 'your-email@gmail.com';
-    String password = 'your-password';
-
-    final smtpServer = gmail(username, password);
-    final message = Message()
-      ..from = Address(username, 'Your App Name')
-      ..recipients.add(email)
-      ..subject = 'Your User ID'
-      ..text = 'Your User ID is: $userId';
-
-    try {
-      final sendReport = await send(message, smtpServer);
-      print('Message sent: ' + sendReport.toString());
-    } on MailerException catch (e) {
-      print('Message not sent. \n' + e.toString());
-      for (var p in e.problems) {
-        print('Problem: ${p.code}: ${p.msg}');
-      }
-      throw Exception('Failed to send email');
-    }
-  }
-
-  Future<void> _onFindId() async {
-    if (emailController.text.isNotEmpty && phoneController.text.isNotEmpty) {
+  Future<void> _onFindEmail() async {
+    if (fullNameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
       try {
         // Firestore에서 사용자 정보 조회
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('users')
-            .where('email', isEqualTo: emailController.text)
+            .where('fullname', isEqualTo: fullNameController.text)
             .where('phone', isEqualTo: phoneController.text)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
-          var userId = userDoc.id;
-
-          // 이메일 전송
-          await _sendEmail(emailController.text, userId);
+          var userEmail = userDoc['email'];
 
           setState(() {
-            isIdSent = true;
-            message = 'Your ID has been sent to your email!';
+            isEmailFound = true;
+            message = 'Your Registered Email Is: $userEmail';
           });
         } else {
           setState(() {
-            message = 'No user found with provided email and phone number.';
+            message = 'No user found with provided full name and phone number.';
           });
         }
       } catch (e) {
         setState(() {
-          message = 'Failed to find ID. Please try again.';
+          message = 'Failed to find email. Please try again.';
         });
       }
     }
@@ -78,6 +52,9 @@ class _FindIdScreenState extends State<FindIdScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final double baseFontSize = 20.0;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
@@ -86,21 +63,24 @@ class _FindIdScreenState extends State<FindIdScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Find My ID',
+              AutoSizeText(
+                'Find My Email',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: fontSizeProvider.getFontSize(32),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 48),
               TextField(
-                controller: emailController,
+                controller: fullNameController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Email',
+                  hintText: 'Full Name',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -114,6 +94,9 @@ class _FindIdScreenState extends State<FindIdScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: 'Phone #',
+                  hintStyle: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -122,7 +105,7 @@ class _FindIdScreenState extends State<FindIdScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _onFindId,
+                onPressed: _onFindEmail,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.green,
@@ -131,17 +114,23 @@ class _FindIdScreenState extends State<FindIdScreen> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const AutoSizeText(
-                    'Find ID',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    maxLines: 1
+                child: AutoSizeText(
+                  'Find Email',
+                  style: TextStyle(
+                    fontSize: fontSizeProvider.getFontSize(20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(height: 16),
-              if (isIdSent || message.isNotEmpty)
+              if (isEmailFound || message.isNotEmpty)
                 AutoSizeText(
                   message,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSizeProvider.getFontSize(13),
+                  ),
                   maxLines: 1,
                 ),
               const SizedBox(height: 16),
@@ -155,9 +144,12 @@ class _FindIdScreenState extends State<FindIdScreen> {
                         MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                      ),
                     ),
                   ),
                   TextButton(
@@ -167,10 +159,11 @@ class _FindIdScreenState extends State<FindIdScreen> {
                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Sign In!',
                       style: TextStyle(
                         color: Colors.white,
+                        fontSize: fontSizeProvider.getFontSize(baseFontSize),
                         fontWeight: FontWeight.bold,
                       ),
                     ),

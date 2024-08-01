@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:provider/provider.dart';
-import 'font_size_provider.dart';
+import 'settings/font_size_provider.dart';
 
 class InformationScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> faqItems = [
+  final List<Map<String, dynamic>> faqItems = const [
     {
       'category': 'Paper/Cardboard',
       'description': 'Newspapers, mails, boxes, and books can be recycled. You just need to flatten the box or remove the hard cover of the book.',
@@ -67,10 +66,12 @@ class InformationScreen extends StatelessWidget {
     },
   ];
 
+  const InformationScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    final double baseFontSize = 20.0;
+    const double baseFontSize = 20.0;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -82,12 +83,12 @@ class InformationScreen extends StatelessWidget {
                 'FAQ',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: Color(0xff009e73),
+                  color: const Color(0xff009e73),
                   // FAQ는 부제목이니까 기본 사이즈보다 10.0 크게 설정
                   fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ...faqItems.map((item) {
                 return FAQItem(
                   category: item['category']!,
@@ -97,7 +98,7 @@ class InformationScreen extends StatelessWidget {
                   descriptionFontSize: fontSizeProvider.getFontSize(baseFontSize - 5.0),
                   icon: item['icon']!,
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -113,7 +114,7 @@ class FAQItem extends StatelessWidget {
   final double categoryFontSize;
   final double descriptionFontSize;
 
-  const FAQItem({
+  const FAQItem({super.key, 
     required this.category,
     required this.description,
     required this.icon,
@@ -124,7 +125,7 @@ class FAQItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    final double baseFontSize = 20.0;
+    const double baseFontSize = 20.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,21 +137,21 @@ class FAQItem extends StatelessWidget {
                 style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0), fontWeight: FontWeight.bold),
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Icon(icon), // Custom icon
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           description,
           style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
       ],
     );
   }
 }
 
-void main() => runApp(MaterialApp(
+void main() => runApp(const MaterialApp(
   home: InformationScreen(),
 ));
