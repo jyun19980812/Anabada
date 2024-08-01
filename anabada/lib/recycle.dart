@@ -84,7 +84,7 @@ class _RecycleScreenState extends State<RecycleScreen> {
         ),
         const SizedBox(height: 20),
         Text(
-          "Check whether you can recycle your trash!",
+          "Check whether you can recycle your trash! \n\n Please take the photo of your trash with clear background if possible for better accuracy.",
           style: TextStyle(
               fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
               fontWeight: FontWeight.w500,
@@ -119,11 +119,11 @@ class _RecycleScreenState extends State<RecycleScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            "Check whether you can recycle your trash!",
+            "Check whether you can recycle your trash!\n\n Please take the photo of your trash with clear background \n if possible for better accuracy.",
             style: TextStyle(
-                fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF009E73)),
+                fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0072b2)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -145,7 +145,7 @@ class _RecycleScreenState extends State<RecycleScreen> {
       style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF009E73),
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(50),
+          minimumSize: const Size.fromHeight(30),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10))),
       child: Column(
@@ -199,7 +199,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
   Future<void> checkRecyclability() async {
     try {
       final imageBytes = await widget.imageFile.readAsBytes();
-      final prompt = TextPart("What is this item, and is this item recyclable?");
+      final prompt = TextPart("Is this item recyclable? Answer in Yes or No, and ignore any background objects such as hands or ground.");
       final imagePart = DataPart('image/jpg', imageBytes);
 
       final response = await model.generateContent([
@@ -215,12 +215,13 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
       });
     }
 
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.pushReplacement(
+    Future.delayed(Duration(seconds: 10), () {
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => ResponsiveNavBarPage(),
+          builder: (context) => RootScreen(initialIndex: 2),
         ),
+        (Route<dynamic> route) => false,
       );
     });
   }
@@ -277,8 +278,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final userId = user.uid;
-      final userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
       int dailyPoints = userDoc.data()?['daily_points'] ?? 0;
       Timestamp? lastUpdated = userDoc.data()?['last_updated'];
 
@@ -298,14 +298,16 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
           result = "Daily points limit reached. Try again tomorrow.";
         });
         Future.delayed(Duration(seconds: 5), () {
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => ResponsiveNavBarPage(),
+              builder: (context) => RootScreen(initialIndex: 2),
             ),
+            (Route<dynamic> route) => false,
           );
         });
       } else {
+        print(dailyPoints);
         checkRecyclability();
       }
     } else {
@@ -319,7 +321,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
       final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
 
       final imageBytes = await widget.imageFile.readAsBytes();
-      final prompt1 = TextPart("Is this item recyclable?");
+      final prompt1 = TextPart("Is this item recyclable? Ignore any background objects such as hands or ground.");
       final prompt2 = TextPart(
           "Estimate the weight of the trash in lbs and respond with the number only.");
       final imagePart = DataPart('image/jpeg', imageBytes);
@@ -336,22 +338,24 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
         final apiResult2 = response2.text ?? "Error estimating weight.";
         trashWeight = double.tryParse(apiResult2); // Save the estimated weight
         if (trashWeight != null) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TakingOutScreen(widget.onTabTapped, trashWeight!),
-            ),
-          );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    TakingOutScreen(widget.onTabTapped, trashWeight!),
+              ),
+            );
         } else {
           setState(() {
             result = "Error estimating weight. Please try again.";
           });
           Future.delayed(Duration(seconds: 5), () {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
-                builder: (context) => ResponsiveNavBarPage(),
+                builder: (context) => RootScreen(initialIndex: 2),
               ),
+              (Route<dynamic> route) => false,
             );
           });
         }
@@ -359,25 +363,25 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
         setState(() {
           result = "This item is not recyclable.";
         });
-        Future.delayed(Duration(seconds: 5), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ResponsiveNavBarPage(),
-            ),
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RootScreen(initialIndex: 2),
+          ),
+          (Route<dynamic> route) => false,
           );
-        });
       }
     } catch (e) {
       setState(() {
         result = "Error verifying recyclability: $e";
       });
-      Future.delayed(Duration(seconds: 10), () {
-        Navigator.pushReplacement(
+      Future.delayed(Duration(seconds: 5), () {
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => ResponsiveNavBarPage(),
+            builder: (context) => RootScreen(initialIndex: 2),
           ),
+          (Route<dynamic> route) => false,
         );
       });
     }
@@ -433,18 +437,13 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  RecyclingScreen2(imageFile, widget.onTabTapped, widget.trashWeight)),
+                  RecyclingScreen2(
+                      imageFile, widget.onTabTapped, widget.trashWeight)),
         );
       }
     } catch (e) {
       print("Error picking image: $e");
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getImage(ImageSource.gallery);
   }
 
   @override
@@ -466,22 +465,22 @@ class _TakingOutScreenState extends State<TakingOutScreen> {
               height: 300,
               child: _imageFile != null
                   ? Image.file(File(_imageFile!.path))
-                  : Text("Please take a photo of you taking out trash",
+                  : Text("Please take a photo of recycling bin to prove that you are taking out the trash! \n\n (Tip: Gemini recognizes the recycling bin better if you take the picture of bin with the recycling symbol!)",
                   textAlign: TextAlign.center, style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize))),
             ),
             SizedBox(height: 20),
             _imageFile == null
                 ? ElevatedButton(
               onPressed: () {
-                getImage(ImageSource.camera);
+                getImage(ImageSource.gallery);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
               ),
               child: Icon(Icons.camera, color: Colors.white),
-            )
-                : Container(),
+            ): Container(),
+
           ],
         ),
       ),
@@ -534,11 +533,12 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
           result = "Daily points limit reached. Try again tomorrow.";
         });
         Future.delayed(Duration(seconds: 5), () {
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => ResponsiveNavBarPage(),
+              builder: (context) => RootScreen(initialIndex: 2),
             ),
+            (Route<dynamic> route) => false,
           );
         });
       } else {
@@ -598,6 +598,7 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
                 .collection('users')
                 .doc(userId)
                 .update({
+              'daily_points': dailyPoints,
               'total_points': newTotalPoints,
               'last_updated': now,
               'total_recycled': newTotalRecycled,
@@ -630,11 +631,12 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
               result = "Daily points limit reached. Try again tomorrow.";
             });
             Future.delayed(Duration(seconds: 5), () {
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ResponsiveNavBarPage(),
+                  builder: (context) => RootScreen(initialIndex: 2),
                 ),
+                (Route<dynamic> route) => false,
               );
             });
           }
@@ -646,11 +648,12 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
           result = "The image is not recognized as a recycling bin.";
         });
         Future.delayed(Duration(seconds: 5), () {
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => ResponsiveNavBarPage(),
+              builder: (context) => RootScreen(initialIndex: 2),
             ),
+            (Route<dynamic> route) => false,
           );
         });
       }
@@ -659,11 +662,12 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
         result = "Error verifying recycling bin: $e";
       });
       Future.delayed(Duration(seconds: 5), () {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => ResponsiveNavBarPage(),
+            builder: (context) => RootScreen(initialIndex: 2),
           ),
+          (Route<dynamic> route) => false,
         );
       });
     }
@@ -720,10 +724,11 @@ class GetPointScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ResponsiveNavBarPage()),
+                      builder: (context) => RootScreen(initialIndex: 2)),
+                      (Route<dynamic> route) => false,
                 );
               },
               style: ElevatedButton.styleFrom(
