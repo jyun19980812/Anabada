@@ -1,3 +1,4 @@
+import 'package:anabada/settings/QNAScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final Map<String, List<String>> settings = {
     'Account': ['Change Profile', 'Reward History'],
     'General': ['Set the unit in grams', 'Font Size'],
+    'QNA' : ['QNA'],
   };
 
   late SettingOptions _settingOptions;
@@ -88,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }).toList(),
                   ),
                 );
-              } else if (item == 'Change Profile' || item == 'Reward History') {
+              } else if (item == 'Change Profile' || item == 'Reward History' || item == "QNA") {
                 return SettingsTile(
                   title: item,
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
@@ -103,6 +105,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const RewardHistoryScreen()),
+                      );
+                    } else if (item == 'QNA') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const QNAScreen()),
                       );
                     }
                   },

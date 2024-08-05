@@ -25,6 +25,9 @@ import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
 
 
+// Your other imports
+import 'package:flutter/material.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
@@ -71,7 +74,9 @@ class MyApp extends StatelessWidget {
 }
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key});
+  final int initialIndex;
+
+  const RootScreen({super.key, this.initialIndex = 0});
 
   @override
   _RootScreenState createState() => _RootScreenState();
@@ -99,12 +104,14 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoggedIn ? const ResponsiveNavBarPage() : const LoginScreen();
+    return _isLoggedIn ? ResponsiveNavBarPage(initialIndex: widget.initialIndex) : const LoginScreen();
   }
 }
 
 class ResponsiveNavBarPage extends StatefulWidget {
-  const ResponsiveNavBarPage({super.key});
+  final int initialIndex;
+
+  const ResponsiveNavBarPage({super.key, this.initialIndex = 0});
 
   @override
   _ResponsiveNavBarPageState createState() => _ResponsiveNavBarPageState();
@@ -112,13 +119,14 @@ class ResponsiveNavBarPage extends StatefulWidget {
 
 class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _pages.addAll([
       HomeScreen(onTabTapped: _onTabTapped),
       const RewardScreen(),
@@ -248,33 +256,13 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
   );
 
   void _navigateTo(BuildContext context, String item) {
-    switch (item) {
-      case 'Home':
-        setState(() {
-          _currentIndex = 0;
-        });
-        break;
-      case 'Reward':
-        setState(() {
-          _currentIndex = 1;
-        });
-        break;
-      case 'Recycle':
-        setState(() {
-          _currentIndex = 2;
-        });
-        break;
-      case 'Points':
-        setState(() {
-          _currentIndex = 3;
-        });
-        break;
-      case 'Information':
-        setState(() {
-          _currentIndex = 4;
-        });
-        break;
-    }
+    int index = _menuItems.indexOf(item);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RootScreen(initialIndex: index),
+      ),
+    );
   }
 }
 
@@ -349,3 +337,4 @@ class _ProfileIcon extends StatelessWidget {
     );
   }
 }
+

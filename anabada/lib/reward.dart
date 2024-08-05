@@ -313,7 +313,7 @@ class _RewardState extends State<Reward> {
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$50'),
                   ),
                   GiftCard(
-                    image: './assets/giftcards/walmartgiftcard.png',
+                    image: './assets/walmartgiftcard.png',
                     value: '\$100',
                     onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$100'),
                   ),
