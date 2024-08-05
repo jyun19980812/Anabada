@@ -74,8 +74,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'password': hashPassword(passwordController.text), // 해시된 비밀번호 저장
             'phone': phoneController.text,
             'email': emailController.text,
-            'total_recycled': 0,
-            'total_points': 0.0,
+            'total_recycled': 0.0,
+            'total_points': 0,
             'location': GeoPoint(_locationData!.latitude!, _locationData!.longitude!), // 위치 정보 저장
           });
         } else {
