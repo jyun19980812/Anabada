@@ -23,7 +23,7 @@ import 'account/account.dart';
 import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
-
+import 'package:flutter/services.dart';
 
 // Your other imports
 import 'package:flutter/material.dart';
@@ -32,7 +32,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await FirebaseAppCheck.instance.activate();
-
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(MultiProvider(
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
