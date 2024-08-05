@@ -3,16 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import './settings/font_size_provider.dart';
 
 class PointsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         body: AnalysisPage(),
-      ),
     );
   }
 }
@@ -33,8 +30,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
   @override
   void initState() {
     super.initState();
-    _getTotalPointsAndRecycled();
-    _getEarnedPoints();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    await _getTotalPointsAndRecycled();
+    await _getEarnedPoints();
   }
 
   Future<void> _getTotalPointsAndRecycled() async {
@@ -70,16 +71,19 @@ class _AnalysisPageState extends State<AnalysisPage> {
       for (var doc in querySnapshot.docs) {
         final timestamp = doc['point_timestamp'] as Timestamp;
         final pointAmount = doc['point_amount'] as int;
+        final pointEarned = doc['point_earned'] as bool;
 
-        if (timestamp.compareTo(todayStartTimestamp) >= 0) {
-          todayPoints += pointAmount;
+        if (pointEarned) {
+          if (timestamp.compareTo(todayStartTimestamp) >= 0) {
+            todayPoints += pointAmount;
+          }
+
+          if (timestamp.compareTo(monthStartTimestamp) >= 0) {
+            monthPoints += pointAmount;
+          }
+
+          totalPoints += pointAmount;
         }
-
-        if (timestamp.compareTo(monthStartTimestamp) >= 0) {
-          monthPoints += pointAmount;
-        }
-
-        totalPoints += pointAmount;
       }
 
       setState(() {
@@ -100,7 +104,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildHeader(fontSizeProvider, baseFontSize),
+            _Header(fontSizeProvider: fontSizeProvider),
             SizedBox(height: 16),
             Expanded(
               child: GridView.count(
@@ -108,41 +112,78 @@ class _AnalysisPageState extends State<AnalysisPage> {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 children: [
-                  _buildInfoCard(
+                  _InfoCard(
                     icon: Icons.recycling,
                     title: 'Total Recycled',
                     value: '${totalRecycled.toStringAsFixed(2)} Pounds',
                     fontSizeProvider: fontSizeProvider,
                     baseFontSize: baseFontSize,
                   ),
-                  _buildInfoCard(
+                  _InfoCard(
                     icon: Icons.point_of_sale,
                     title: 'Total Points',
                     value: '$totalPoints P',
                     fontSizeProvider: fontSizeProvider,
                     baseFontSize: baseFontSize,
                   ),
-                  _buildSummaryItem('$todayEarned', 'Today Earned', fontSizeProvider, baseFontSize),
-                  _buildSummaryItem('$monthEarned', 'This Month Earned', fontSizeProvider, baseFontSize),
+                  _SummaryItem(
+                    amount: '$todayEarned',
+                    title: 'Today Earned',
+                    fontSizeProvider: fontSizeProvider,
+                    baseFontSize: baseFontSize,
+                  ),
+                  _SummaryItem(
+                    amount: '$monthEarned',
+                    title: 'This Month Earned',
+                    fontSizeProvider: fontSizeProvider,
+                    baseFontSize: baseFontSize,
+                  ),
                 ],
               ),
             ),
             SizedBox(height: 16),
-            _buildAttendance(context, fontSizeProvider, baseFontSize),
+            _AttendanceSection(
+              selectedDate: _selectedDate,
+              onSelectDate: _selectDate,
+              fontSizeProvider: fontSizeProvider,
+              baseFontSize: baseFontSize,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(FontSizeProvider fontSizeProvider, double baseFontSize) {
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+}
+
+class _Header extends StatelessWidget {
+  final FontSizeProvider fontSizeProvider;
+
+  const _Header({required this.fontSizeProvider});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Text(
           'Points',
           style: TextStyle(
-            fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
+            fontSize: fontSizeProvider.getFontSize(26.0),
             fontWeight: FontWeight.bold,
             color: Color(0xff009e73),
           ),
@@ -150,15 +191,25 @@ class _AnalysisPageState extends State<AnalysisPage> {
       ],
     );
   }
+}
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required FontSizeProvider fontSizeProvider,
-    required double baseFontSize,
-  }
-      ) {
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final FontSizeProvider fontSizeProvider;
+  final double baseFontSize;
+
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.fontSizeProvider,
+    required this.baseFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       color: Colors.white,
       elevation: 4.0,
@@ -199,13 +250,23 @@ class _AnalysisPageState extends State<AnalysisPage> {
       ),
     );
   }
+}
 
-  Widget _buildSummaryItem(
-      String amount,
-      String title,
-      FontSizeProvider fontSizeProvider,
-      double baseFontSize,
-      ) {
+class _SummaryItem extends StatelessWidget {
+  final String amount;
+  final String title;
+  final FontSizeProvider fontSizeProvider;
+  final double baseFontSize;
+
+  const _SummaryItem({
+    required this.amount,
+    required this.title,
+    required this.fontSizeProvider,
+    required this.baseFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       color: Colors.white,
       elevation: 4.0,
@@ -240,8 +301,23 @@ class _AnalysisPageState extends State<AnalysisPage> {
       ),
     );
   }
+}
 
-  Widget _buildAttendance(BuildContext context, FontSizeProvider fontSizeProvider, double baseFontSize) {
+class _AttendanceSection extends StatelessWidget {
+  final DateTime? selectedDate;
+  final Function(BuildContext) onSelectDate;
+  final FontSizeProvider fontSizeProvider;
+  final double baseFontSize;
+
+  const _AttendanceSection({
+    required this.selectedDate,
+    required this.onSelectDate,
+    required this.fontSizeProvider,
+    required this.baseFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
@@ -260,59 +336,90 @@ class _AnalysisPageState extends State<AnalysisPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Attendance',
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.getFontSize(18.0),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Selected',
-                    style: TextStyle(
-                      fontSize: fontSizeProvider.getFontSize(baseFontSize),
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _selectDate(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff009e73),
-                ),
-                child: Text(
-                  'Calendar',
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.getFontSize(baseFontSize),
-                  ),
-                ),
-              ),
-            ],
+          _AttendanceHeader(
+            onSelectDate: onSelectDate,
+            fontSizeProvider: fontSizeProvider,
+            baseFontSize: baseFontSize,
           ),
-          if (_selectedDate != null) _buildSelectedDate(fontSizeProvider, baseFontSize),
+          if (selectedDate != null)
+            _AttendanceItem(
+              month: DateFormat('MMMM').format(selectedDate!),
+              status: 'Recycled 0 pounds',
+              fontSizeProvider: fontSizeProvider,
+              baseFontSize: baseFontSize,
+            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSelectedDate(FontSizeProvider fontSizeProvider, double baseFontSize) {
-    return _buildAttendanceItem(DateFormat('MMMM').format(_selectedDate!), 'Recycled 0 pounds', fontSizeProvider, baseFontSize);
+class _AttendanceHeader extends StatelessWidget {
+  final Function(BuildContext) onSelectDate;
+  final FontSizeProvider fontSizeProvider;
+  final double baseFontSize;
+
+  const _AttendanceHeader({
+    required this.onSelectDate,
+    required this.fontSizeProvider,
+    required this.baseFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Attendance',
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(18.0),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Selected',
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              ),
+            ),
+          ],
+        ),
+        ElevatedButton(
+          onPressed: () => onSelectDate(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xff009e73),
+          ),
+          child: Text(
+            'Calendar',
+            style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+            ),
+          ),
+        ),
+      ],
+    );
   }
+}
 
-  Widget _buildAttendanceItem(
-      String month,
-      String status,
-      FontSizeProvider fontSizeProvider,
-      double baseFontSize,
-      ) {
+class _AttendanceItem extends StatelessWidget {
+  final String month;
+  final String status;
+  final FontSizeProvider fontSizeProvider;
+  final double baseFontSize;
+
+  const _AttendanceItem({
+    required this.month,
+    required this.status,
+    required this.fontSizeProvider,
+    required this.baseFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
         Icons.circle,
@@ -332,20 +439,5 @@ class _AnalysisPageState extends State<AnalysisPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 }

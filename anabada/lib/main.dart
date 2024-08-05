@@ -24,6 +24,8 @@ import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
 
+import 'settings/theme_notifier.dart'; // 다크모드 추가
+
 
 // Your other imports
 import 'package:flutter/material.dart';
@@ -37,6 +39,7 @@ void main() async {
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
+      ChangeNotifierProvider(create: (_) => ThemeNotifier()), //더ㅏ크모드 추가
       Provider(create: (_) => SettingOptions()),
     ],
     child: const MyApp(),
@@ -54,6 +57,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context); // 다크모드 추가
     return MaterialApp(
       title: 'Flutter Tab App',
       theme: ThemeData(
@@ -68,6 +72,20 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.black,
         ),
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF009E73),
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF009E73),
+          foregroundColor: Colors.white,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          selectedItemColor: Color(0xFF009E73),
+          unselectedItemColor: Colors.white,
+        ),
+      ),
+      themeMode: themeNotifier.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const RootScreen(),
     );
   }
@@ -144,11 +162,12 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context); // 다크모드 추가
     final width = MediaQuery.of(context).size.width;
     final bool isLargeScreen = width > 800;
 
     return Theme(
-      data: ThemeData.light(),
+      data: themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(), // 다크모드 추가
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(

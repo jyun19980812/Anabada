@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '/settings/font_size_provider.dart';
+import 'font_size_provider.dart';
 
 class RewardHistoryScreen extends StatefulWidget {
   const RewardHistoryScreen({super.key});
