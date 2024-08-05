@@ -82,7 +82,7 @@ class AccountScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                          _ProfileInfoRow(totalPoints: totalPoints, totalRecycled: recycledValue)
+                          _ProfileInfoRow(totalPoints: totalPoints.toString(), totalRecycled: recycledValue.toString())
                         ],
                       ),
                     ),
@@ -98,8 +98,8 @@ class AccountScreen extends StatelessWidget {
 }
 
 class _ProfileInfoRow extends StatelessWidget {
-  final int totalPoints;
-  final double totalRecycled;
+  final String totalPoints;
+  final String totalRecycled;
 
   const _ProfileInfoRow({Key? key, required this.totalPoints, required this.totalRecycled}) : super(key: key);
 
@@ -114,9 +114,9 @@ class _ProfileInfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _singleItem(context, 'Points', totalPoints.toString()),
+          _singleItem(context, 'Points', totalPoints),
           const VerticalDivider(),
-          _singleItem(context, 'Recycled', totalRecycled.toStringAsFixed(2)),
+          _singleItem(context, 'Recycled', totalRecycled),
         ],
       ),
     );

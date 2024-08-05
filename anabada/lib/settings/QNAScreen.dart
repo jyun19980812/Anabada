@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../settings/font_size_provider.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class QNAScreen extends StatefulWidget {
