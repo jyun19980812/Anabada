@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import './settings/font_size_provider.dart';
-
 class RewardScreen extends StatelessWidget {
   const RewardScreen({super.key});
 
@@ -70,7 +68,7 @@ class _RewardState extends State<Reward> {
               child: const Text('Confirm'),
               onPressed: () async {
                 Navigator.of(context).pop();
-                await _redeemGiftCard(_scaffoldKey.currentContext!, brand, value);
+                await _redeemGiftCard(brand, value);
               },
             ),
           ],
@@ -79,7 +77,7 @@ class _RewardState extends State<Reward> {
     );
   }
 
-  Future<void> _redeemGiftCard(BuildContext context, String brand, String value) async {
+  Future<void> _redeemGiftCard(String brand, String value) async {
     User? user = _auth.currentUser;
     if (user != null) {
       int cardValue = int.parse(value.replaceAll('\$', ''));
@@ -199,151 +197,132 @@ class _RewardState extends State<Reward> {
       key: _scaffoldKey,
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text(
-                  'Benefits',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff009e73),
-                  ),
-                ),
-                const SizedBox(width: 80),
-                const Text(
-                  'Points : ',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff009e73),
-                  ),
-                ),
-                Text(
-                  '$totalPoints P',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff009e73),
-                  ),
-                ),
-              ],
+          _Header(totalPoints: totalPoints),
+          if (purchasedProducts.isNotEmpty)
+            _PurchasedProductsList(purchasedProducts: purchasedProducts),
+          Expanded(
+            child: _GiftCardGrid(onRedeem: _showPurchaseConfirmationDialog),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final int totalPoints;
+
+  const _Header({required this.totalPoints});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          const Text(
+            'Benefits',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xff009e73),
             ),
           ),
-          if (purchasedProducts.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                children: purchasedProducts.map((product) {
-                  return Card(
-                    child: ListTile(
-                      title: Text('${product['brand']} gift card'),
-                      subtitle: Text('Value: ${product['value']}'),
-                    ),
-                  );
-                }).toList(),
-              ),
+          const SizedBox(width: 80),
+          const Text(
+            'Points : ',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xff009e73),
             ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.all(8),
-              child: GridView.count(
-                crossAxisCount: 2,
-                padding: const EdgeInsets.all(8),
-                children: [
-                  GiftCard(
-                    image: './assets/starbucksgiftcard.png',
-                    value: '\$10',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Starbucks', '\$10'),
-                  ),
-                  GiftCard(
-                    image: './assets/starbucksgiftcard.png',
-                    value: '\$25',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Starbucks', '\$25'),
-                  ),
-                  GiftCard(
-                    image: './assets/starbucksgiftcard.png',
-                    value: '\$50',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Starbucks', '\$50'),
-                  ),
-                  GiftCard(
-                    image: './assets/starbucksgiftcard.png',
-                    value: '\$100',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Starbucks', '\$100'),
-                  ),
-                  GiftCard(
-                    image: './assets/amazongiftcard.png',
-                    value: '\$10',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Amazon', '\$10'),
-                  ),
-                  GiftCard(
-                    image: './assets/amazongiftcard.png',
-                    value: '\$25',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Amazon', '\$25'),
-                  ),
-                  GiftCard(
-                    image: './assets/amazongiftcard.png',
-                    value: '\$50',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Amazon', '\$50'),
-                  ),
-                  GiftCard(
-                    image: './assets/amazongiftcard.png',
-                    value: '\$100',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Amazon', '\$100'),
-                  ),
-                  GiftCard(
-                    image: './assets/walmartgiftcard.png',
-                    value: '\$10',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$10'),
-                  ),
-                  GiftCard(
-                    image: './assets/walmartgiftcard.png',
-                    value: '\$25',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$25'),
-                  ),
-                  GiftCard(
-                    image: './assets/walmartgiftcard.png',
-                    value: '\$50',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$50'),
-                  ),
-                  GiftCard(
-                    image: './assets/walmartgiftcard.png',
-                    value: '\$100',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Walmart', '\$100'),
-                  ),
-                  GiftCard(
-                    image: './assets/targetgiftcard.png',
-                    value: '\$10',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Target', '\$10'),
-                  ),
-                  GiftCard(
-                    image: './assets/targetgiftcard.png',
-                    value: '\$25',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Target', '\$25'),
-                  ),
-                  GiftCard(
-                    image: './assets/targetgiftcard.png',
-                    value: '\$50',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Target', '\$50'),
-                  ),
-                  GiftCard(
-                    image: './assets/targetgiftcard.png',
-                    value: '\$100',
-                    onRedeem: () => _showPurchaseConfirmationDialog(context, 'Target', '\$100'),
-                  ),
-                ],
-              ),
+          ),
+          Text(
+            '$totalPoints P',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xff009e73),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class _PurchasedProductsList extends StatelessWidget {
+  final List<Map<String, String>> purchasedProducts;
+
+  const _PurchasedProductsList({required this.purchasedProducts});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: purchasedProducts.map((product) {
+          return Card(
+            child: ListTile(
+              title: Text('${product['brand']} gift card'),
+              subtitle: Text('Value: ${product['value']}'),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _GiftCardGrid extends StatelessWidget {
+  final Function(BuildContext, String, String) onRedeem;
+
+  const _GiftCardGrid({required this.onRedeem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: GridView.count(
+        crossAxisCount: 2,
+        padding: const EdgeInsets.all(8),
+        children: _getGiftCards(context),
+      ),
+    );
+  }
+
+  List<Widget> _getGiftCards(BuildContext context) {
+    const giftCards = [
+      {'image': './assets/starbucksgiftcard.png', 'value': '\$10', 'brand': 'Starbucks'},
+      {'image': './assets/starbucksgiftcard.png', 'value': '\$25', 'brand': 'Starbucks'},
+      {'image': './assets/starbucksgiftcard.png', 'value': '\$50', 'brand': 'Starbucks'},
+      {'image': './assets/starbucksgiftcard.png', 'value': '\$100', 'brand': 'Starbucks'},
+      {'image': './assets/amazongiftcard.png', 'value': '\$10', 'brand': 'Amazon'},
+      {'image': './assets/amazongiftcard.png', 'value': '\$25', 'brand': 'Amazon'},
+      {'image': './assets/amazongiftcard.png', 'value': '\$50', 'brand': 'Amazon'},
+      {'image': './assets/amazongiftcard.png', 'value': '\$100', 'brand': 'Amazon'},
+      {'image': './assets/walmartgiftcard.png', 'value': '\$10', 'brand': 'Walmart'},
+      {'image': './assets/walmartgiftcard.png', 'value': '\$25', 'brand': 'Walmart'},
+      {'image': './assets/walmartgiftcard.png', 'value': '\$50', 'brand': 'Walmart'},
+      {'image': './assets/walmartgiftcard.png', 'value': '\$100', 'brand': 'Walmart'},
+      {'image': './assets/targetgiftcard.png', 'value': '\$10', 'brand': 'Target'},
+      {'image': './assets/targetgiftcard.png', 'value': '\$25', 'brand': 'Target'},
+      {'image': './assets/targetgiftcard.png', 'value': '\$50', 'brand': 'Target'},
+      {'image': './assets/targetgiftcard.png', 'value': '\$100', 'brand': 'Target'},
+    ];
+
+    return giftCards.map((card) {
+      return GiftCard(
+        image: card['image']!,
+        value: card['value']!,
+        onRedeem: () => onRedeem(context, card['brand']!, card['value']!),
+      );
+    }).toList();
   }
 }
 
@@ -367,6 +346,7 @@ class GiftCard extends StatelessWidget {
     } else if (image.contains('target')) {
       brand = 'Target';
     }
+
     return Container(
       child: Card(
         color: const Color.fromARGB(255, 228, 227, 227),
