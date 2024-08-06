@@ -1,34 +1,45 @@
+import 'dart:io';
+
 import 'package:anabada/settings/setting_options.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+
+import 'firebase_options.dart';
+
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
 import 'login/login.dart';
+
 import 'account/account.dart';
+
 import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
 import 'settings/image_provider.dart';
-import 'package:flutter/services.dart';
+
+import 'settings/theme_notifier.dart'; // 다크모드 추가
+
+
+// Your other imports
+import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await FirebaseAppCheck.instance.activate();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+
   runApp(MultiProvider(
     providers:[
       ChangeNotifierProvider(create: (_) => FontSizeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileImageProvider()),
+      ChangeNotifierProvider(create: (_) => ThemeNotifier()), //더ㅏ크모드 추가
       Provider(create: (_) => SettingOptions()),
     ],
     child: const MyApp(),
@@ -46,6 +57,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context); // 다크모드 추가
     return MaterialApp(
       title: 'Flutter Tab App',
       theme: ThemeData(
@@ -60,6 +72,20 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.black,
         ),
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF009E73),
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF009E73),
+          foregroundColor: Colors.white,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          selectedItemColor: Color(0xFF009E73),
+          unselectedItemColor: Colors.white,
+        ),
+      ),
+      themeMode: themeNotifier.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const RootScreen(),
     );
   }
@@ -136,11 +162,12 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context); // 다크모드 추가
     final width = MediaQuery.of(context).size.width;
     final bool isLargeScreen = width > 800;
 
     return Theme(
-      data: ThemeData.light(),
+      data: themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(), // 다크모드 추가
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(

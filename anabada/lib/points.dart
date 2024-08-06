@@ -8,10 +8,8 @@ import './settings/font_size_provider.dart';
 class PointsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         body: AnalysisPage(),
-      ),
     );
   }
 }

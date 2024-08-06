@@ -7,6 +7,8 @@ import './reward_history.dart';
 import './setting_options.dart';
 import './font_size_provider.dart';
 
+import 'theme_notifier.dart'; // 다크모드
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -17,7 +19,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final Map<String, List<String>> settings = {
     'Account': ['Change Profile', 'Reward History'],
-    'General': ['Set the unit in grams', 'Font Size'],
+    'General': ['Set the unit in grams', 'Font Size','Dark Mode'],
     'QNA' : ['QNA'],
   };
 
@@ -39,6 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
     const double baseFontSize = 20.0;
 
     return Scaffold(
@@ -88,6 +91,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       );
                     }).toList(),
+                  ),
+                );
+              } else if (item == 'Dark Mode') { // Dark Mode
+                return SettingsTile(
+                  title: item,
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  trailing: Switch(
+                    value: themeNotifier.isDarkMode,
+                    activeColor: const Color(0xff29dead),
+                    onChanged: (bool value) {
+                      setState(() {
+                        themeNotifier.setDarkMode(value);
+                      });
+                    },
                   ),
                 );
               } else if (item == 'Change Profile' || item == 'Reward History' || item == "QNA") {

@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
+import 'package:provider/provider.dart';
+import 'settings/theme_notifier.dart'; // 다크모드 추가
+
 class RewardScreen extends StatelessWidget {
   const RewardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Reward(),
-    );
+    return const Reward();
   }
 }
 
@@ -282,9 +284,10 @@ class _GiftCardGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context); // 다크모드 추가
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(8),
@@ -386,12 +389,14 @@ class GiftCard extends StatelessWidget {
                       brand,
                       style: TextStyle(
                         fontSize: fontSize005,
+                        color: Colors.black,
                       ),
                     ),
                     Text(
                       " gift card ",
                       style: TextStyle(
                         fontSize: fontSize005,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -400,6 +405,7 @@ class GiftCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: fontSize01,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                   ],
