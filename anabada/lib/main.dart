@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:anabada/settings/setting_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,32 +6,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-
-import 'firebase_options.dart';
-
 import 'home.dart';
 import 'reward.dart';
 import 'recycle.dart';
 import 'points.dart';
 import 'information.dart';
 import 'login/login.dart';
-
 import 'account/account.dart';
-
 import 'settings/settings.dart';
 import 'settings/font_size_provider.dart';
+import 'package:flutter/services.dart';
 import 'settings/image_provider.dart';
-
 import 'settings/theme_notifier.dart'; // 다크모드 추가
-
-
-// Your other imports
-import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await FirebaseAppCheck.instance.activate();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(MultiProvider(
     providers:[
