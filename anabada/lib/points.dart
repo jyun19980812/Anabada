@@ -9,7 +9,7 @@ class PointsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: AnalysisPage(),
+      body: AnalysisPage(),
     );
   }
 }
@@ -26,11 +26,18 @@ class _AnalysisPageState extends State<AnalysisPage> {
   int todayEarned = 0;
   int monthEarned = 0;
   int totalEarned = 0;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   Future<void> _fetchData() async {
@@ -40,18 +47,20 @@ class _AnalysisPageState extends State<AnalysisPage> {
 
   Future<void> _getTotalPointsAndRecycled() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    if (user != null && !_isDisposed) {
       final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      setState(() {
-        totalPoints = userDoc.data()?['total_points'] ?? 0;
-        totalRecycled = userDoc.data()?['total_recycled'] ?? 0.0;
-      });
+      if (!_isDisposed) {
+        setState(() {
+          totalPoints = userDoc.data()?['total_points'] ?? 0;
+          totalRecycled = userDoc.data()?['total_recycled'] ?? 0.0;
+        });
+      }
     }
   }
 
   Future<void> _getEarnedPoints() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
+    if (user != null && !_isDisposed) {
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
       final monthStart = DateTime(now.year, now.month, 1);
@@ -86,11 +95,13 @@ class _AnalysisPageState extends State<AnalysisPage> {
         }
       }
 
-      setState(() {
-        todayEarned = todayPoints;
-        monthEarned = monthPoints;
-        totalEarned = totalPoints;
-      });
+      if (!_isDisposed) {
+        setState(() {
+          todayEarned = todayPoints;
+          monthEarned = monthPoints;
+          totalEarned = totalPoints;
+        });
+      }
     }
   }
 
