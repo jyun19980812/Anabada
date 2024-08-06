@@ -3,6 +3,19 @@ import 'package:provider/provider.dart';
 import 'settings/font_size_provider.dart';
 
 class InformationScreen extends StatelessWidget {
+  const InformationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: const InformationContent(),
+    );
+  }
+}
+
+class InformationContent extends StatelessWidget {
+  const InformationContent({super.key});
+
   final List<Map<String, dynamic>> faqItems = const [
     {
       'category': 'Paper/Cardboard',
@@ -66,41 +79,34 @@ class InformationScreen extends StatelessWidget {
     },
   ];
 
-  const InformationScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     const double baseFontSize = 20.0;
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'FAQ',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xff009e73),
-                  // FAQ는 부제목이니까 기본 사이즈보다 10.0 크게 설정
-                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
-                ),
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'FAQ',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xff009e73),
+                fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
               ),
-              const SizedBox(height: 16),
-              ...faqItems.map((item) {
-                return FAQItem(
-                  category: item['category']!,
-                  // 기본 설정
-                  categoryFontSize: fontSizeProvider.getFontSize(baseFontSize + 5.0),
-                  description: item['description']!,
-                  descriptionFontSize: fontSizeProvider.getFontSize(baseFontSize - 5.0),
-                  icon: item['icon']!,
-                );
-              }),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            ...faqItems.map((item) => FAQItem(
+              category: item['category']!,
+              categoryFontSize: fontSizeProvider.getFontSize(baseFontSize + 5.0),
+              description: item['description']!,
+              descriptionFontSize: fontSizeProvider.getFontSize(baseFontSize - 5.0),
+              icon: item['icon']!,
+            )),
+          ],
         ),
       ),
     );
@@ -114,7 +120,8 @@ class FAQItem extends StatelessWidget {
   final double categoryFontSize;
   final double descriptionFontSize;
 
-  const FAQItem({super.key, 
+  const FAQItem({
+    super.key,
     required this.category,
     required this.description,
     required this.icon,
@@ -124,8 +131,6 @@ class FAQItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    const double baseFontSize = 20.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,17 +139,20 @@ class FAQItem extends StatelessWidget {
             Expanded(
               child: Text(
                 category,
-                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: categoryFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(width: 8),
-            Icon(icon), // Custom icon
+            Icon(icon),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           description,
-          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),),
+          style: TextStyle(fontSize: descriptionFontSize),
         ),
         const SizedBox(height: 16),
       ],
@@ -152,6 +160,8 @@ class FAQItem extends StatelessWidget {
   }
 }
 
-void main() => runApp(const MaterialApp(
-  home: InformationScreen(),
-));
+void main() => runApp(
+  const MaterialApp(
+    home: InformationScreen(),
+  ),
+);
