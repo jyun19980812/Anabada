@@ -51,23 +51,23 @@ class _RewardState extends State<Reward> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Purchase Confirmation'),
+          title: const Text('Purchase Confirmation', style: TextStyle(fontFamily:'Ubuntu'),),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Are you sure you want to purchase a $value $brand gift card?'),
+                Text('Are you sure you want to purchase a $value $brand gift card?' ,style: TextStyle(fontFamily:'Ubuntu'),),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: const Text('Cancel' ,style: TextStyle(fontFamily:'Ubuntu'),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text('Confirm'),
+              child: const Text('Confirm',style: TextStyle(fontFamily:'Ubuntu'),),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await _redeemGiftCard(brand, value);
@@ -160,14 +160,14 @@ class _RewardState extends State<Reward> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error'),
+          title: const Text('Error',style: TextStyle(fontFamily:'Ubuntu'),),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('OK'),
+              child: const Text('OK',style: TextStyle(fontFamily:'Ubuntu'),),
             ),
           ],
         );
@@ -180,14 +180,14 @@ class _RewardState extends State<Reward> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Purchase Complete'),
-          content: Text('You have successfully redeemed a $value $brand gift card.'),
+          title: const Text('Purchase Complete',style: TextStyle(fontFamily:'Ubuntu'),),
+          content: Text('You have successfully redeemed a $value $brand gift card.',style: TextStyle(fontFamily:'Ubuntu'),),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('OK'),
+              child: const Text('OK',style: TextStyle(fontFamily:'Ubuntu'),),
             ),
           ],
         );
@@ -231,6 +231,7 @@ class _Header extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xff009e73),
+              fontFamily: 'Ubuntu'
             ),
           ),
           const SizedBox(width: 80),
@@ -240,6 +241,7 @@ class _Header extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xff009e73),
+              fontFamily: 'Ubuntu'
             ),
           ),
           Text(
@@ -248,6 +250,7 @@ class _Header extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xff009e73),
+              fontFamily: 'Ubuntu'
             ),
           ),
         ],
@@ -269,8 +272,8 @@ class _PurchasedProductsList extends StatelessWidget {
         children: purchasedProducts.map((product) {
           return Card(
             child: ListTile(
-              title: Text('${product['brand']} gift card'),
-              subtitle: Text('Value: ${product['value']}'),
+              title: Text('${product['brand']} gift card', style: TextStyle(fontFamily: 'Ubuntu'),),
+              subtitle: Text('Value: ${product['value']}', style: TextStyle(fontFamily: 'Ubuntu'),),
             ),
           );
         }).toList(),
@@ -392,6 +395,7 @@ class GiftCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: fontSize005,
                         color: Colors.black,
+                        fontFamily: 'Ubuntu',
                       ),
                     ),
                     Text(
@@ -399,6 +403,7 @@ class GiftCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: fontSize005,
                         color: Colors.black,
+                        fontFamily: 'Ubuntu',
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -408,6 +413,7 @@ class GiftCard extends StatelessWidget {
                         fontSize: fontSize01,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
+                        fontFamily: 'Ubuntu',
                       ),
                     ),
                   ],
