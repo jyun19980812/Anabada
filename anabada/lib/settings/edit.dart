@@ -23,11 +23,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     'phone': TextEditingController(),
   };
 
+  final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
-
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
+  String? _profileImageUrl;
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final profileImageUrl = data['profileImageUrl'] as String?;
         if (profileImageUrl != null) {
           setState(() {
-            _imageFile = XFile(profileImageUrl);
+            _profileImageUrl = profileImageUrl;
           });
         }
       }
@@ -72,7 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       controller.dispose();
     });
     _passwordController.dispose();
-    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
     super.dispose();
   }
 
@@ -98,11 +98,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
     } catch (e) {
       print("Error updating profile: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Wrong password. Please try again.')),
+      );
     }
   }
 
   Future<void> _reauthenticate(User user) async {
-    final currentPassword = _currentPasswordController.text;
+    final currentPassword = _passwordController.text;
 
     try {
       final credential = EmailAuthProvider.credential(
@@ -121,13 +124,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
 
     final updatedData = _controllers.map((key, controller) => MapEntry(key, controller.text));
+    if (_newPasswordController.text.isNotEmpty) {
+      await user.updatePassword(_newPasswordController.text);
+    }
     await userDoc.update(updatedData);
     print("User info updated successfully");
   }
 
   Future<void> _uploadProfileImage(User user) async {
     final storage = FirebaseStorage.instanceFor(
-      bucket: 'gs://anabada-74beb.appspot.com',  // Replace with your actual bucket name
+      bucket: 'gs://anabada-74beb.appspot.com', // Replace with your actual bucket name
     );
     final storageRef = storage.ref().child('profile_images/${user.uid}');
     final uploadTask = storageRef.putFile(File(_imageFile!.path));
@@ -140,11 +146,48 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     await userDoc.update({'profileImageUrl': downloadUrl});
 
     setState(() {
-      _imageFile = XFile(downloadUrl);
+      _profileImageUrl = downloadUrl;
     });
 
     // 업데이트된 URL을 ProfileImageProvider에 설정
     Provider.of<ProfileImageProvider>(context, listen: false).setImageFile(_imageFile);
+  }
+
+  void _showPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Change Profile'),
+          content: TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(labelText: 'Enter current password'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  await _updateProfile();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Incorrect password. Please try again.')),
+                  );
+                }
+              },
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -186,6 +229,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         width: 100,
                         height: 100,
                       ))
+                          : _profileImageUrl != null
+                          ? Image.network(
+                        _profileImageUrl!,
+                        fit: BoxFit.cover,
+                        width: 100,
+                        height: 100,
+                      )
                           : const Icon(Icons.camera_alt_outlined, size: 50),
                     ),
                   ),
@@ -195,8 +245,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ..._buildTextFields(fontSizeProvider, baseFontSize),
               const SizedBox(height: 20),
               _buildPasswordField(fontSizeProvider, baseFontSize),
-              const SizedBox(height: 20),
-              _buildCurrentPasswordField(fontSizeProvider, baseFontSize),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -211,9 +259,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () async {
-                      await _updateProfile();
-                    },
+                    onPressed: _showPasswordDialog,
                     child: Text(
                       'Confirm',
                       style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
@@ -281,41 +327,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
-              controller: _passwordController,
+              controller: _newPasswordController,
               decoration: InputDecoration(
                 labelText: 'Enter new password',
-                labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
-              ),
-              obscureText: true,
-              style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentPasswordField(FontSizeProvider fontSizeProvider, double baseFontSize) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80.0,
-            child: Text(
-              'Password',
-              style: TextStyle(
-                fontSize: fontSizeProvider.getFontSize(baseFontSize),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: _currentPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Enter current password',
                 labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
               ),
               obscureText: true,
