@@ -349,10 +349,10 @@ class GiftCard extends StatelessWidget {
     } else if (image.contains('target')) {
       brand = 'Target';
     }
-
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       child: Card(
-        color: const Color.fromARGB(255, 228, 227, 227),
+        color: isDarkMode ? Colors.grey[600] : const Color.fromARGB(255, 228, 227, 227),
         elevation: 4,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
