@@ -91,7 +91,7 @@ class InformationContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'FAQ',
+              'Recycle Information',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: const Color(0xff009e73),
