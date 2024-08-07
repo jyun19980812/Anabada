@@ -20,12 +20,14 @@ class AnalysisPage extends StatefulWidget {
 }
 
 class _AnalysisPageState extends State<AnalysisPage> {
-  DateTime? _selectedDate;
+  DateTime? _startDate;
+  DateTime? _endDate;
   int totalPoints = 0;
   double totalRecycled = 0.0;
   int todayEarned = 0;
   int monthEarned = 0;
   int totalEarned = 0;
+  int rangeEarned = 0;
   bool _isDisposed = false;
 
   @override
@@ -76,6 +78,7 @@ class _AnalysisPageState extends State<AnalysisPage> {
       int todayPoints = 0;
       int monthPoints = 0;
       int totalPoints = 0;
+      int totalRangePoints = 0;
 
       for (var doc in querySnapshot.docs) {
         final timestamp = doc['point_timestamp'] as Timestamp;
@@ -91,6 +94,13 @@ class _AnalysisPageState extends State<AnalysisPage> {
             monthPoints += pointAmount;
           }
 
+          if (_startDate != null && _endDate != null) {
+            final startTimestamp = Timestamp.fromDate(_startDate!);
+            final endTimestamp = Timestamp.fromDate(_endDate!.add(Duration(days: 1)));
+            if (timestamp.compareTo(startTimestamp) >= 0 && timestamp.compareTo(endTimestamp) < 0) {
+              totalRangePoints += pointAmount;
+            }
+          }
           totalPoints += pointAmount;
         }
       }
@@ -100,8 +110,28 @@ class _AnalysisPageState extends State<AnalysisPage> {
           todayEarned = todayPoints;
           monthEarned = monthPoints;
           totalEarned = totalPoints;
+          rangeEarned = totalRangePoints;
         });
       }
+    }
+  }
+
+  Future<void> _selectDateRange(BuildContext context) async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+      initialDateRange: _startDate != null && _endDate != null
+          ? DateTimeRange(start: _startDate!, end: _endDate!)
+          : null,
+    );
+
+    if (picked != null) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+      await _fetchData(); // Re-fetch data to update the range points
     }
   }
 
@@ -154,30 +184,17 @@ class _AnalysisPageState extends State<AnalysisPage> {
             ),
             SizedBox(height: 16),
             _AttendanceSection(
-              selectedDate: _selectedDate,
-              onSelectDate: _selectDate,
+              startDate: _startDate,
+              endDate: _endDate,
+              onSelectDateRange: _selectDateRange,
+              rangeEarned: rangeEarned,
               fontSizeProvider: fontSizeProvider,
               baseFontSize: baseFontSize,
-            ),
+            )
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2101),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 }
 
@@ -221,8 +238,9 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Card(
-      color: Colors.white,
+      color: isDarkMode ? Colors.grey[800] : Colors.white,
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
@@ -253,6 +271,7 @@ class _InfoCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize + 6.0),
                 color: Color(0xff009e73),
+                fontFamily: 'Ubuntu'
               ),
               textAlign: TextAlign.center,
             ),
@@ -278,8 +297,9 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Card(
-      color: Colors.white,
+      color: isDarkMode ? Colors.grey[800] : Colors.white,
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
@@ -315,25 +335,30 @@ class _SummaryItem extends StatelessWidget {
 }
 
 class _AttendanceSection extends StatelessWidget {
-  final DateTime? selectedDate;
-  final Function(BuildContext) onSelectDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final Function(BuildContext) onSelectDateRange;
+  final int rangeEarned;
   final FontSizeProvider fontSizeProvider;
   final double baseFontSize;
 
   const _AttendanceSection({
-    required this.selectedDate,
-    required this.onSelectDate,
+    required this.startDate,
+    required this.endDate,
+    required this.onSelectDateRange,
+    required this.rangeEarned,
     required this.fontSizeProvider,
     required this.baseFontSize,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -348,17 +373,31 @@ class _AttendanceSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _AttendanceHeader(
-            onSelectDate: onSelectDate,
+            onSelectDateRange: onSelectDateRange,
             fontSizeProvider: fontSizeProvider,
             baseFontSize: baseFontSize,
           ),
-          if (selectedDate != null)
-            _AttendanceItem(
-              month: DateFormat('MMMM').format(selectedDate!),
-              status: 'Recycled 0 pounds',
-              fontSizeProvider: fontSizeProvider,
-              baseFontSize: baseFontSize,
+          if (startDate != null)
+            Text(
+              'Start Date: ${DateFormat('yyyy-MM-dd').format(startDate!)}',
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              ),
             ),
+          if (endDate != null)
+            Text(
+              'End Date: ${DateFormat('yyyy-MM-dd').format(endDate!)}',
+              style: TextStyle(
+                fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              ),
+            ),
+          SizedBox(height: 8),
+          Text(
+            'Points Earned: $rangeEarned P',
+            style: TextStyle(
+              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+            ),
+          ),
         ],
       ),
     );
@@ -366,12 +405,12 @@ class _AttendanceSection extends StatelessWidget {
 }
 
 class _AttendanceHeader extends StatelessWidget {
-  final Function(BuildContext) onSelectDate;
+  final Function(BuildContext) onSelectDateRange;
   final FontSizeProvider fontSizeProvider;
   final double baseFontSize;
 
   const _AttendanceHeader({
-    required this.onSelectDate,
+    required this.onSelectDateRange,
     required this.fontSizeProvider,
     required this.baseFontSize,
   });
@@ -391,16 +430,10 @@ class _AttendanceHeader extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              'Selected',
-              style: TextStyle(
-                fontSize: fontSizeProvider.getFontSize(baseFontSize),
-              ),
-            ),
           ],
         ),
         ElevatedButton(
-          onPressed: () => onSelectDate(context),
+          onPressed: () => onSelectDateRange(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: Color(0xff009e73),
           ),
