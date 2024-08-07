@@ -276,7 +276,7 @@ class _InfoCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontSize: fontSizeProvider.getFontSize(baseFontSize + 1.0),
+                      fontSize: fontSizeProvider.getFontSize(baseFontSize - 1.0),
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Ubuntu',
                     ),
