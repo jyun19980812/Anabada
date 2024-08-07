@@ -96,6 +96,7 @@ class InformationContent extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 color: const Color(0xff009e73),
                 fontSize: fontSizeProvider.getFontSize(baseFontSize + 10.0),
+                fontFamily: 'Ubuntu',
               ),
             ),
             const SizedBox(height: 16),
@@ -142,6 +143,7 @@ class FAQItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: categoryFontSize,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Ubuntu',
                 ),
               ),
             ),
@@ -152,7 +154,10 @@ class FAQItem extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           description,
-          style: TextStyle(fontSize: descriptionFontSize),
+          style: TextStyle(
+              fontSize: descriptionFontSize,
+              fontFamily: 'Ubuntu',
+          ),
         ),
         const SizedBox(height: 16),
       ],

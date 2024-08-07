@@ -52,6 +52,7 @@ class _RewardHistoryScreenState extends State<RewardHistoryScreen> {
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize),
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Ubuntu',
               ),
             ),
             SizedBox(height: 16),
@@ -128,6 +129,7 @@ class RewardCard extends StatelessWidget {
                   date,
                   style: TextStyle(
                     fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    fontFamily: 'Ubuntu',
                   ),
                 ),
                 SizedBox(height: 8),
@@ -136,6 +138,7 @@ class RewardCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: fontSizeProvider.getFontSize(baseFontSize),
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'Ubuntu',
                   ),
                 ),
                 SizedBox(height: 8),
@@ -143,6 +146,7 @@ class RewardCard extends StatelessWidget {
                   points,
                   style: TextStyle(
                     fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    fontFamily: 'Ubuntu',
                   ),
                 ),
               ],

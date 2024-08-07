@@ -171,6 +171,7 @@ class SettingsSection extends StatelessWidget {
             style: TextStyle(
               fontSize: getFontSize(fontSize),
               fontWeight: FontWeight.bold,
+              fontFamily: 'Ubuntu',
             ),
           ),
         ),
@@ -200,7 +201,7 @@ class SettingsTile extends StatelessWidget {
     return ListTile(
       title: Text(
         title,
-        style: TextStyle(fontSize: fontSize),
+        style: TextStyle(fontSize: fontSize, fontFamily: 'Ubuntu'),
       ),
       trailing: trailing,
       onTap: onTap,

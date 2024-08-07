@@ -255,7 +255,9 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
         title: Text(
           item,
           style: const TextStyle(
-              fontWeight: FontWeight.w700, color: Color(0xFF009E73)),
+              fontWeight: FontWeight.w700, color: Color(0xFF009E73),
+              fontFamily: 'Ubuntu',
+          ),
         ),
       ))
           .toList(),
@@ -276,7 +278,7 @@ class _ResponsiveNavBarPageState extends State<ResponsiveNavBarPage> {
           const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16),
           child: Text(
             item,
-            style: const TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18, fontFamily: 'Ubuntu',),
           ),
         ),
       ),

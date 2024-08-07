@@ -451,9 +451,9 @@ class _AttendanceHeader extends StatelessWidget {
             Text(
               'Attendance',
               style: TextStyle(
-                fontSize: fontSizeProvider.getFontSize(18.0),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Ubuntu'
+                  fontSize: fontSizeProvider.getFontSize(18.0),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Ubuntu'
               ),
             ),
           ],
@@ -500,15 +500,15 @@ class _AttendanceItem extends StatelessWidget {
       title: Text(
         month,
         style: TextStyle(
-          fontSize: fontSizeProvider.getFontSize(baseFontSize),
-          fontFamily: 'Ubuntu'
+            fontSize: fontSizeProvider.getFontSize(baseFontSize),
+            fontFamily: 'Ubuntu'
         ),
       ),
       subtitle: Text(
         status,
         style: TextStyle(
-          fontSize: fontSizeProvider.getFontSize(baseFontSize - 2.0),
-          fontFamily: 'Ubuntu'
+            fontSize: fontSizeProvider.getFontSize(baseFontSize - 2.0),
+            fontFamily: 'Ubuntu'
         ),
       ),
     );

@@ -76,7 +76,9 @@ class _RecycleScreenState extends State<RecycleScreen> {
           style: TextStyle(
               fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
               fontWeight: FontWeight.w700,
-              color: Color(0xFF009E73)),
+              color: Color(0xFF009E73),
+              fontFamily: 'Ubuntu',
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
@@ -85,7 +87,9 @@ class _RecycleScreenState extends State<RecycleScreen> {
           style: TextStyle(
               fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
               fontWeight: FontWeight.w500,
-              color: Color(0xFF009E73)),
+              fontFamily: 'Ubuntu',
+              color: Color(0xFF009E73),
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
@@ -111,7 +115,9 @@ class _RecycleScreenState extends State<RecycleScreen> {
             style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF009E73)),
+                fontFamily: 'Ubuntu',
+                color: Color(0xFF009E73),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -120,7 +126,9 @@ class _RecycleScreenState extends State<RecycleScreen> {
             style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize),
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0072b2)),
+                fontFamily: 'Ubuntu',
+                color: Color(0xFF0072b2),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -152,13 +160,21 @@ class _RecycleScreenState extends State<RecycleScreen> {
           const SizedBox(height: 20),
           Text(
             title,
-            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize),),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              fontFamily: 'Ubuntu',
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.white, fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: fontSizeProvider.getFontSize(baseFontSize - 4.0),
+              fontFamily: 'Ubuntu',
+            ),
             textAlign: TextAlign.center,
           ),
         ],
