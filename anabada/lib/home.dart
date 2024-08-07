@@ -112,6 +112,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0),
                     color: Colors.white,
+                    fontFamily: 'Ubuntu',
                   ),
                   maxLines: 1,
                 ),
@@ -122,6 +123,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: fontSizeProvider.getFontSize(baseFontSize),
                     color: Colors.white,
+                    fontFamily: 'Ubuntu',
                   ),
                   maxLines: 2,
                 ),
@@ -132,6 +134,7 @@ class HomeScreen extends StatelessWidget {
                     fontSize: fontSizeProvider.getFontSize(baseFontSize),
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
+                    fontFamily: 'Ubuntu',
                   ),
                   maxLines: 1,
                 ),

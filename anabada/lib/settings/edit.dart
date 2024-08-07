@@ -199,7 +199,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         title: Text(
           'Profile Edit',
-          style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+          style: TextStyle(
+            fontSize: fontSizeProvider.getFontSize(baseFontSize),
+            fontFamily: 'Ubuntu',),
         ),
       ),
       body: Padding(
@@ -255,14 +257,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     },
                     child: Text(
                       'Cancel',
-                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                        fontFamily: 'Ubuntu',),
                     ),
                   ),
                   ElevatedButton(
                     onPressed: _showPasswordDialog,
                     child: Text(
                       'Confirm',
-                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                      style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                        fontFamily: 'Ubuntu',),
                     ),
                   ),
                 ],
@@ -288,6 +292,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 key,
                 style: TextStyle(
                   fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  fontFamily: 'Ubuntu',
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -298,9 +303,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _controllers[key],
                 decoration: InputDecoration(
                   labelText: 'Enter $key',
-                  labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                  labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                    fontFamily: 'Ubuntu',),
                 ),
-                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  fontFamily: 'Ubuntu',),
               ),
             ),
           ],
@@ -320,6 +327,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               'New Password',
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                fontFamily: 'Ubuntu',
               ),
               textAlign: TextAlign.center,
             ),
@@ -330,10 +338,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _newPasswordController,
               decoration: InputDecoration(
                 labelText: 'Enter new password',
-                labelStyle: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+                labelStyle: TextStyle(
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                  fontFamily: 'Ubuntu',
+                ),
               ),
               obscureText: true,
-              style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize)),
+              style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                fontFamily: 'Ubuntu',),
             ),
           ),
         ],

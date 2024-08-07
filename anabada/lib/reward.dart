@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
 import 'package:provider/provider.dart';
 import 'settings/theme_notifier.dart'; // 다크모드 추가
 
@@ -39,9 +37,11 @@ class _RewardState extends State<Reward> {
     User? user = _auth.currentUser;
     if (user != null) {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
-      setState(() {
-        totalPoints = userDoc['total_points'] ?? 0; // Provide a default value
-      });
+      if (mounted) {
+        setState(() {
+          totalPoints = userDoc['total_points'] ?? 0; // Provide a default value
+        });
+      }
     }
   }
 
@@ -114,10 +114,12 @@ class _RewardState extends State<Reward> {
                 'point_earned': false,
               });
 
-              setState(() {
-                totalPoints = newTotalPoints;
-                purchasedProducts.add({'brand': brand, 'value': value});
-              });
+              if (mounted) {
+                setState(() {
+                  totalPoints = newTotalPoints;
+                  purchasedProducts.add({'brand': brand, 'value': value});
+                });
+              }
 
               _showConfirmationMessage(context, brand, value);
             }
