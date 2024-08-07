@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import './settings/setting_options.dart'; // import SettingOptions class
 import './settings/font_size_provider.dart';
 
 class PointsScreen extends StatelessWidget {
@@ -29,10 +30,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
   int totalEarned = 0;
   int rangeEarned = 0;
   bool _isDisposed = false;
+  bool _isKgEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _fetchData();
   }
 
@@ -40,6 +43,16 @@ class _AnalysisPageState extends State<AnalysisPage> {
   void dispose() {
     _isDisposed = true;
     super.dispose();
+  }
+
+  Future<void> _loadSettings() async {
+    final settingOptions = Provider.of<SettingOptions>(context, listen: false);
+    bool isKgEnabled = await settingOptions.isKgEnabled();
+    if (!_isDisposed) {
+      setState(() {
+        _isKgEnabled = isKgEnabled;
+      });
+    }
   }
 
   Future<void> _fetchData() async {
@@ -55,6 +68,9 @@ class _AnalysisPageState extends State<AnalysisPage> {
         setState(() {
           totalPoints = userDoc.data()?['total_points'] ?? 0;
           totalRecycled = userDoc.data()?['total_recycled'] ?? 0.0;
+          if (_isKgEnabled) {
+            totalRecycled *= 453.592; // Convert kg to pounds if setting is disabled
+          }
         });
       }
     }
@@ -156,7 +172,9 @@ class _AnalysisPageState extends State<AnalysisPage> {
                   _InfoCard(
                     icon: Icons.recycling,
                     title: 'Total Recycled',
-                    value: '${totalRecycled.toStringAsFixed(2)} Pounds',
+                    value: _isKgEnabled
+                        ? '${totalRecycled.toStringAsFixed(2)} g'
+                        : '${totalRecycled.toStringAsFixed(2)} lbs',
                     fontSizeProvider: fontSizeProvider,
                     baseFontSize: baseFontSize,
                   ),
@@ -214,6 +232,7 @@ class _Header extends StatelessWidget {
             fontSize: fontSizeProvider.getFontSize(26.0),
             fontWeight: FontWeight.bold,
             color: Color(0xff009e73),
+            fontFamily: 'Ubuntu',
           ),
         ),
       ],
@@ -259,6 +278,7 @@ class _InfoCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: fontSizeProvider.getFontSize(baseFontSize + 1.0),
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'Ubuntu',
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -269,9 +289,9 @@ class _InfoCard extends StatelessWidget {
             Text(
               value,
               style: TextStyle(
-                fontSize: fontSizeProvider.getFontSize(baseFontSize + 6.0),
-                color: Color(0xff009e73),
-                fontFamily: 'Ubuntu'
+                  fontSize: fontSizeProvider.getFontSize(baseFontSize + 6.0),
+                  color: Color(0xff009e73),
+                  fontFamily: 'Ubuntu'
               ),
               textAlign: TextAlign.center,
             ),
@@ -315,6 +335,7 @@ class _SummaryItem extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: fontSizeProvider.getFontSize(18.0),
+                  fontFamily: 'Ubuntu',
                 ),
               ),
             ),
@@ -324,6 +345,7 @@ class _SummaryItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(14.0),
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Ubuntu',
               ),
               textAlign: TextAlign.center,
             ),
@@ -382,6 +404,7 @@ class _AttendanceSection extends StatelessWidget {
               'Start Date: ${DateFormat('yyyy-MM-dd').format(startDate!)}',
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                fontFamily: 'Ubuntu',
               ),
             ),
           if (endDate != null)
@@ -389,6 +412,7 @@ class _AttendanceSection extends StatelessWidget {
               'End Date: ${DateFormat('yyyy-MM-dd').format(endDate!)}',
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(baseFontSize),
+                fontFamily: 'Ubuntu',
               ),
             ),
           SizedBox(height: 8),
@@ -396,6 +420,7 @@ class _AttendanceSection extends StatelessWidget {
             'Points Earned: $rangeEarned P',
             style: TextStyle(
               fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              fontFamily: 'Ubuntu',
             ),
           ),
         ],
@@ -428,6 +453,7 @@ class _AttendanceHeader extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSizeProvider.getFontSize(18.0),
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Ubuntu'
               ),
             ),
           ],
@@ -441,6 +467,7 @@ class _AttendanceHeader extends StatelessWidget {
             'Calendar',
             style: TextStyle(
               fontSize: fontSizeProvider.getFontSize(baseFontSize),
+              fontFamily: 'Ubuntu',
             ),
           ),
         ),
@@ -474,12 +501,14 @@ class _AttendanceItem extends StatelessWidget {
         month,
         style: TextStyle(
           fontSize: fontSizeProvider.getFontSize(baseFontSize),
+          fontFamily: 'Ubuntu'
         ),
       ),
       subtitle: Text(
         status,
         style: TextStyle(
           fontSize: fontSizeProvider.getFontSize(baseFontSize - 2.0),
+          fontFamily: 'Ubuntu'
         ),
       ),
     );
