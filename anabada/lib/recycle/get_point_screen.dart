@@ -13,11 +13,12 @@ class GetPointScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     final double baseFontSize = 20.0;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Text('Points Earned!'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: Column(

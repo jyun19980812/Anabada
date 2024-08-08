@@ -123,15 +123,17 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
         setState(() {
           result = "This item is not recyclable.";
         });
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RootScreen(initialIndex: 2),
-            ),
-                (Route<dynamic> route) => false,
-          );
-        }
+        Future.delayed(Duration(seconds: 5), () {
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RootScreen(initialIndex: 2),
+              ),
+                  (Route<dynamic> route) => false,
+            );
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -157,11 +159,12 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     final double baseFontSize = 20.0;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0)),),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: Column(
