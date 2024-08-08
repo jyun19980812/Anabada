@@ -212,11 +212,12 @@ class _RecyclingScreen2State extends State<RecyclingScreen2> {
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     final double baseFontSize = 20.0;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Text('Recycling...', style: TextStyle(fontSize: fontSizeProvider.getFontSize(baseFontSize + 4.0))),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: Column(

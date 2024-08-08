@@ -82,7 +82,7 @@ class AccountScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                          _ProfileInfoRow(totalPoints: totalPoints.toString(), totalRecycled: recycledValue.toString())
+                          _ProfileInfoRow(totalPoints: totalPoints.toString(), totalRecycled: recycledValue.toStringAsFixed(2))
                         ],
                       ),
                     ),
