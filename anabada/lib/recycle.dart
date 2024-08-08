@@ -145,7 +145,7 @@ class _RecycleScreenState extends State<RecycleScreen> {
     final double baseFontSize = 20.0;
     return ElevatedButton(
       onPressed: () {
-        getImage(ImageSource.gallery, buttonId);
+        getImage(ImageSource.camera, buttonId);
       },
       style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF009E73),
