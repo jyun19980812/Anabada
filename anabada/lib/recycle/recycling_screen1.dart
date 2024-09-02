@@ -73,7 +73,7 @@ class _RecyclingScreen1State extends State<RecyclingScreen1> {
 
   Future<void> checkRecyclability() async {
     try {
-      final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
+      final apiKey = 'YOUR-API-KEY'; // Replace with your actual API key
       final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
 
       final imageBytes = await widget.imageFile.readAsBytes();
