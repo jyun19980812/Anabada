@@ -27,7 +27,7 @@ class _CheckRecyclingScreenState extends State<CheckRecyclingScreen> {
   }
 
   void initializeModel() {
-    final apiKey = 'AIzaSyCmAbRKhYxdJKljPlWK5Sk_hgWMFLSDRYY'; // Replace with your actual API key
+    final apiKey = 'YOUR-API-KEY'; // Replace with your actual API key
     model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
   }
 
